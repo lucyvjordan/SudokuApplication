@@ -57,8 +57,12 @@ class Sudoku():
                         [1, 0, 0, 0, 1, 1, 0, 0, 1],
                         [0, 0, 1, 0, 0, 0, 1, 1, 1],
                         [1, 0, 1, 0, 0, 0, 0, 1, 0],
-                        [0, 0, 0, 0, 1, 0, 0, 0, 0]]      
-    
+                        [0, 0, 0, 0, 1, 0, 0, 0, 0]]    
+
+        self.finalgrid = []
+        
+        self.finalgridfixed = []
+        
 
         self.currenty = 0
         self.currentx = 0
@@ -71,6 +75,7 @@ class Sudoku():
         self.boldfont = pygame.font.SysFont('Consolas', 25, bold=True)
         self.black = (0, 0, 0)
         self.green = (0, 255, 0)
+        self.red = (255, 0, 0)
         self.returning = False
         self.solving = True
 
@@ -98,6 +103,10 @@ class Sudoku():
                     
                     if self.testgridfixed[y][x] == 1:
                         text = self.boldfont.render(str(self.testgrid[y][x]), False, self.black) 
+                    
+                    elif self.testgridfixed[y][x] == 2:
+                        text = self.boldfont.render(str(self.testgrid[y][x]), False, self.red) 
+                    
                     else:
                         text = self.font.render(str(self.testgrid[y][x]), False, self.green) 
                     # the number will be bold if it is fixed
@@ -112,6 +121,46 @@ class Sudoku():
 
             pygame.display.update()
 
+
+    def dryrun(self):
+        # performed before starting to solve
+        fixedpointfound = True
+        # runs until all the fixed points have been found
+        while fixedpointfound:
+            fixedpointfound = False
+        
+            for y in range(9):
+                self.currenty = y
+                for x in range(9):                        
+                    self.currentx = x
+                    # goes through every element in grid
+                    if self.testgridfixed[y][x] == 0:
+                    # if not fixed
+                        numbers = []
+                        counttrue = 0
+
+                        for n in range(9):
+                            # if still numbers to go through
+                            self.currentnumber = n + 1
+                            self.testgrid[y][x] = self.currentnumber
+
+                            if(self.checkRow() and self.checkColumn() and self.checkBox()):
+                            # checks if the number is valid by sudoku rules
+                                counttrue += 1
+                                numbers.append(self.currentnumber)
+
+                        if counttrue == 1:
+                            # if theres only one possible value for that box
+                            self.testgrid[y][x] = numbers[0]
+                            self.testgridfixed[y][x] = 2
+                            fixedpointfound = True
+                        else:
+                            self.testgrid[y][x] = 0
+            
+        self.currentnumber = 0
+        self.currentx = 0
+        self.currenty = 0  
+
     def solve(self):
 
         if self.testgridfixed[self.currenty][self.currentx] == 0:
@@ -121,6 +170,7 @@ class Sudoku():
             if self.testgrid[self.currenty][self.currentx] < 9:
                 # if still numbers to go throguh
                 self.testgrid[self.currenty][self.currentx] += 1
+                self.currentnumber = self.testgrid[self.currenty][self.currentx]
             
                 if(self.checkRow() and self.checkColumn() and self.checkBox()):
                 # checks if the number is valid by sudoku rules
@@ -143,14 +193,13 @@ class Sudoku():
 
     def checkRow(self):
         # checks current row for another instance of the current number
-        self.currentnumber = self.testgrid[self.currenty][self.currentx]
         if self.testgrid[self.currenty].count(self.currentnumber) > 1:
+            
             return False
         return True
 
     def checkColumn(self):
         # checks current column for another instance of the current number
-        self.currentnumber = self.testgrid[self.currenty][self.currentx]
         count = 0
         for y in range(len(self.testgrid)):
             if self.currentnumber == self.testgrid[y][self.currentx]:
@@ -208,5 +257,6 @@ class Sudoku():
 
 
 Sudoku1 = Sudoku()
+Sudoku1.dryrun()
 Sudoku1.draw()
 pygame.quit()
