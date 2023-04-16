@@ -59,11 +59,6 @@ class Sudoku():
                         [1, 0, 1, 0, 0, 0, 0, 1, 0],
                         [0, 0, 0, 0, 1, 0, 0, 0, 0]]    
 
-        self.finalgrid = []
-        
-        self.finalgridfixed = []
-        
-
         self.currenty = 0
         self.currentx = 0
         self.currentnumber = 0
@@ -76,6 +71,7 @@ class Sudoku():
         self.black = (0, 0, 0)
         self.green = (0, 255, 0)
         self.red = (255, 0, 0)
+        self.blue = (0, 0, 255)
         self.returning = False
         self.solving = True
 
@@ -107,6 +103,9 @@ class Sudoku():
                     elif self.testgridfixed[y][x] == 2:
                         text = self.boldfont.render(str(self.testgrid[y][x]), False, self.red) 
                     
+                    elif self.testgridfixed[y][x] == 3:
+                        text = self.boldfont.render(str(self.testgrid[y][x]), False, self.blue) 
+                                      
                     else:
                         text = self.font.render(str(self.testgrid[y][x]), False, self.green) 
                     # the number will be bold if it is fixed
@@ -131,13 +130,17 @@ class Sudoku():
         
             for y in range(9):
                 self.currenty = y
+                self.rownumbers = []
+                # stores the possible values for each element in a row
+                self.uniquenumbers = []
+                # will store the numbers in each row that can only be in one element
                 for x in range(9):                        
                     self.currentx = x
                     # goes through every element in grid
                     if self.testgridfixed[y][x] == 0:
                     # if not fixed
-                        numbers = []
-                        counttrue = 0
+                        self.numbers = []
+                        # will store the numbers for each element that are valid
 
                         for n in range(9):
                             # if still numbers to go through
@@ -146,16 +149,22 @@ class Sudoku():
 
                             if(self.checkRow() and self.checkColumn() and self.checkBox()):
                             # checks if the number is valid by sudoku rules
-                                counttrue += 1
-                                numbers.append(self.currentnumber)
+                                self.numbers.append(self.currentnumber)
+    
 
-                        if counttrue == 1:
+                        if len(self.numbers) == 1:
                             # if theres only one possible value for that box
-                            self.testgrid[y][x] = numbers[0]
+                            self.testgrid[y][x] = self.numbers[0]
                             self.testgridfixed[y][x] = 2
                             fixedpointfound = True
                         else:
                             self.testgrid[y][x] = 0
+
+                        self.rownumbers.append([x, self.numbers])
+                        # for each element, the values it can take are stored
+
+                self.checkHiddenValueRow()
+                    
             
         self.currentnumber = 0
         self.currentx = 0
@@ -254,6 +263,27 @@ class Sudoku():
         else:
             self.currentx -= 1
         self.returning = True     
+
+    def checkHiddenValueRow(self):
+        for array in self.rownumbers:
+            for number in array[1]:
+                self.uniquenumbers.append(number)
+
+        self.uniquenumbers = ([x for x in self.uniquenumbers if self.uniquenumbers.count(x)==1])
+
+        for array in self.rownumbers:
+            for x in self.uniquenumbers:
+
+                if x in array[1]:
+                    self.testgrid[self.currenty][array[0]] = x
+                    self.testgridfixed[self.currenty][array[0]] = 3
+                    self.fixedpointfound = True        
+
+    def checkHiddenValueColumn(self):
+        pass
+
+    def checkHiddenValueBox(self):
+        pass
 
 
 Sudoku1 = Sudoku()
