@@ -9,15 +9,6 @@ win = pygame.display.set_mode((500,500))
 
 class Sudoku():
     def __init__(self):
-        self.emptygrid = [[("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0)],
-                        [("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0)],
-                        [("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0)],
-                        [("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0)],
-                        [("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0)],
-                        [("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0)],
-                        [("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0)],
-                        [("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0)],
-                        [("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0), ("", 0)]]
         
         self.testgridold = [[0, 0, 0, 2, 0, 6, 0, 4, 0],
                         [5, 0, 0, 3, 0, 0, 0, 1, 0],
@@ -59,6 +50,26 @@ class Sudoku():
                         [0, 0, 1, 0, 0, 0, 1, 1, 1],
                         [1, 0, 1, 0, 0, 0, 0, 1, 0],
                         [0, 0, 0, 0, 1, 0, 0, 0, 0]]     
+        
+        self.testgrid17 = [[0, 0, 1, 0, 4, 0, 0, 0, 0],
+                        [2, 0, 0, 0, 0, 0, 0, 6, 0],
+                        [0, 0, 0, 0, 8, 0, 5, 0, 0],
+                        [0, 0, 0, 2, 0, 0, 1, 0, 0],
+                        [0, 8, 0, 0, 0, 0, 4, 0, 0],
+                        [3, 0, 0, 6, 0, 0, 0, 0, 0],
+                        [0, 4, 0, 0, 5, 0, 0, 7, 0],
+                        [0, 0, 0, 3, 0, 0, 0, 2, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0]]
+        
+        self.testgridfixed17 = [[0, 0, 1, 0, 4, 0, 0, 0, 0],
+                        [1, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 1, 0, 1, 0, 0],
+                        [0, 0, 0, 1, 0, 0, 1, 0, 0],
+                        [0, 1, 0, 0, 0, 0, 1, 0, 0],
+                        [1, 0, 0, 1, 0, 0, 0, 0, 0],
+                        [0, 1, 0, 0, 1, 0, 0, 1, 0],
+                        [0, 0, 0, 1, 0, 0, 0, 1, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0]]           
 
         self.currenty = 0
         self.currentx = 0
@@ -256,32 +267,39 @@ class Sudoku():
 
 
     def checkHiddenPointColumn(self, index):
-        # haven't tested whether this works yet, so it isn't called
+        # checks whether there are any hidden points in the current column
         self.uniquenumbers = []
+        # will store a list of all the numbers that only occur once
 
         for j in range(len(self.testgrid)):
             for number in self.testgrid[j][index]:
+                # takes all the numbers in the current column (index = current column)
                 self.uniquenumbers.append(number)
-
+                
         self.uniquenumbers = ([x for x in self.uniquenumbers if self.uniquenumbers.count(x)==1])
-        
+        # gets rid of all the numbers that occur more than once in the array
+
         pointfound = False
+
         for a in range (len(self.testgrid)):
-
+            # a will refer to the current row in the column (index)
             for x in self.uniquenumbers:
-
                 if x in self.testgrid[a][index]:
-                    if len(self.testgrid[a][index]) != 1:
+                # goes through every number that is unique in the row, and checks it against the numbers that are valid for the current element
 
+                    if len(self.testgrid[a][index]) != 1:
+                    # if there are other numbers that are valid for the element with the unique number, the other numbers are removed
+                        
                         self.testgrid[a][index] = [x]
                         self.testgridfixed[a][index] = 3
+                        # the element becomes a hidden fixed point
 
                         self.removing(x, a, index)
                         pointfound = True
 
-        # fixed point when found, meaning that cant be compared as not a lsit anymore, make a new copy? or, havent deleted other isntances of that number yet in row and column, try that first, then when comapring check if isintance list.
         if pointfound:
             self.hiddenpointfound = True
+            # means that hidden points will continue to be checked for
 
 
     def checkHiddenPointBox(self, index):
@@ -388,7 +406,7 @@ class Sudoku():
 
             for i in range(9):
                 self.checkHiddenPointRow(i)
-                #self.checkHiddenPointColumn(i)
+                self.checkHiddenPointColumn(i)
                 #self.checkHiddenPointBox(i)
 
         
