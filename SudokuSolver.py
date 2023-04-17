@@ -302,9 +302,52 @@ class Sudoku():
             # means that hidden points will continue to be checked for
 
 
-    def checkHiddenPointBox(self, index):
-        # not coded yet
-        pass
+    def checkHiddenPointBox(self):
+        # checks whether there are any hidden points in the current box        
+       
+        for y in range(3):
+            for x in range(3):
+            # goes through every box
+
+                self.uniquenumbers = []
+                # will store a list of all the numbers that only occur once
+                topleftbox = [0, 0]
+                topleftbox[0] = y * 3
+                topleftbox[1] = x * 3
+                # finds the top left of each box, (0,0), (3,0), (6,3) etc. 
+
+                for i in range(3):
+                    for j in range(3):
+                        for number in self.testgrid[topleftbox[0] + i][topleftbox[1] + j]:
+                            self.uniquenumbers.append(number)
+                # goes through each of the 9 elements of box and finds the valid numbers for each
+                
+                self.uniquenumbers = ([x for x in self.uniquenumbers if self.uniquenumbers.count(x)==1])
+                # gets rid of all the numbers that occur more than once in the array
+
+                pointfound = False
+
+                for i in range(3):
+                    for j in range(3):
+                        # goes through every box again
+                        for x in self.uniquenumbers:
+                            if x in self.testgrid[topleftbox[0] + i][topleftbox[1] + j]:
+                            # goes through every number that is unique in the box, and checks it against the numbers that are valid for the current element
+
+                                if len(self.testgrid[topleftbox[0] + i][topleftbox[1] + j]) != 1:
+                                # if there are other numbers that are valid for the element with the unique number, the other numbers are removed
+
+                                    self.testgrid[topleftbox[0] + i][topleftbox[1] + j] = [x]
+                                    self.testgridfixed[topleftbox[0] + i][topleftbox[1] + j] = 3
+                                    # the element becomes a hidden fixed point
+
+                                    self.removing(x, topleftbox[0] + i, topleftbox[1] + j)
+
+                                    pointfound = True
+
+                if pointfound:
+                    self.hiddenpointfound = True
+                    # means that hidden points will continue to be checked for
 
 
     def removing(self, toRemove, row, column):
@@ -407,7 +450,9 @@ class Sudoku():
             for i in range(9):
                 self.checkHiddenPointRow(i)
                 self.checkHiddenPointColumn(i)
-                #self.checkHiddenPointBox(i)
+                self.checkHiddenPointBox()
+                # index not passed to this one, because doing so would mean only boxes 1, 5, and 9 are checked
+                # (index goes diagonally down and right - which works for row and column, but not for boxes)
 
         
         for i in range(len(self.testgrid)):
