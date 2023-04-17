@@ -1,6 +1,7 @@
 import pygame
 import time
 start_time = time.time()
+clock = pygame.time.Clock()
 
 pygame.init()
 win = pygame.display.set_mode((500,500))
@@ -57,7 +58,7 @@ class Sudoku():
                         [1, 0, 0, 0, 1, 1, 0, 0, 1],
                         [0, 0, 1, 0, 0, 0, 1, 1, 1],
                         [1, 0, 1, 0, 0, 0, 0, 1, 0],
-                        [0, 0, 0, 0, 1, 0, 0, 0, 0]]    
+                        [0, 0, 0, 0, 1, 0, 0, 0, 0]]     
 
         self.currenty = 0
         self.currentx = 0
@@ -121,57 +122,7 @@ class Sudoku():
             pygame.display.update()
 
 
-    def dryrun(self):
-        # performed before starting to solve
-        fixedpointfound = True
-        # runs until all the fixed points have been found
-        while fixedpointfound:
-            fixedpointfound = False
-        
-            for y in range(9):
-                self.currenty = y
-                self.rownumbers = []
-                # stores the possible values for each element in a row
-                self.uniquenumbers = []
-                # will store the numbers in each row that can only be in one element
-                for x in range(9):                        
-                    self.currentx = x
-                    # goes through every element in grid
-                    if self.testgridfixed[y][x] == 0:
-                    # if not fixed
-                        self.numbers = []
-                        # will store the numbers for each element that are valid
-
-                        for n in range(9):
-                            # if still numbers to go through
-                            self.currentnumber = n + 1
-                            self.testgrid[y][x] = self.currentnumber
-
-                            if(self.checkRow() and self.checkColumn() and self.checkBox()):
-                            # checks if the number is valid by sudoku rules
-                                self.numbers.append(self.currentnumber)
-    
-
-                        if len(self.numbers) == 1:
-                            # if theres only one possible value for that box
-                            self.testgrid[y][x] = self.numbers[0]
-                            self.testgridfixed[y][x] = 2
-                            fixedpointfound = True
-                        else:
-                            self.testgrid[y][x] = 0
-
-                        self.rownumbers.append([x, self.numbers])
-                        # for each element, the values it can take are stored
-
-                self.checkHiddenValueRow()
-                    
-            
-        self.currentnumber = 0
-        self.currentx = 0
-        self.currenty = 0  
-
     def solve(self):
-
         if self.testgridfixed[self.currenty][self.currentx] == 0:
         # if not fixed
 
@@ -183,8 +134,8 @@ class Sudoku():
             
                 if(self.checkRow() and self.checkColumn() and self.checkBox()):
                 # checks if the number is valid by sudoku rules
-                            #nextbox
-                            self.toNextBox()
+                    #nextbox
+                    self.toNextBox()
 
             else:
                 #previous box
@@ -202,13 +153,15 @@ class Sudoku():
 
     def checkRow(self):
         # checks current row for another instance of the current number
+
         if self.testgrid[self.currenty].count(self.currentnumber) > 1:
-            
             return False
         return True
 
+
     def checkColumn(self):
         # checks current column for another instance of the current number
+
         count = 0
         for y in range(len(self.testgrid)):
             if self.currentnumber == self.testgrid[y][self.currentx]:
@@ -216,6 +169,7 @@ class Sudoku():
         if count > 1:
             return False
         return True
+
 
     def checkBox(self):
         # checks current box for another instance of the current number
@@ -236,6 +190,7 @@ class Sudoku():
             return False
         return True
 
+
     def toNextBox(self):
         if self.currentx == 8:
             if self.currenty == 8:
@@ -247,7 +202,8 @@ class Sudoku():
                 # if in the rightmost column, go down a row
         else:
             self.currentx += 1
-        
+
+
     def toPreviousBox(self):
         if self.testgridfixed[self.currenty][self.currentx] == 0:
             self.testgrid[self.currenty][self.currentx] = 0
@@ -262,31 +218,195 @@ class Sudoku():
         # if in leftmost column, go up a row
         else:
             self.currentx -= 1
-        self.returning = True     
+        self.returning = True  
 
-    def checkHiddenValueRow(self):
-        for array in self.rownumbers:
-            for number in array[1]:
+
+    def checkHiddenPointRow(self, index):
+        # checks whether there are any hidden points in the current row
+        self.uniquenumbers = []
+        # will store a list of all the numbers that only occur once
+
+        for array in self.testgrid[index]:
+            for number in array:
                 self.uniquenumbers.append(number)
 
         self.uniquenumbers = ([x for x in self.uniquenumbers if self.uniquenumbers.count(x)==1])
+        # gets rid of all the numbers that occur more than once in the array
 
-        for array in self.rownumbers:
+        pointfound = False
+
+        for a in range (len(self.testgrid[index])):
+            # a will refer to the current column in the row (index)
+            for x in self.uniquenumbers:
+                if x in self.testgrid[index][a]:
+                # goes through every number that is unique in the row, and checks it against the numbers that are valid for the current element
+
+                    if len(self.testgrid[index][a]) != 1:
+                        # if there are other numbers that are valid for the element with the unique number, the other numbers are removed
+                        self.testgrid[index][a] = [x]
+                        self.testgridfixed[index][a] = 3
+                        # the element becomes a hidden fixed point
+
+                        self.removing(x, index, a)
+                        pointfound = True
+
+        if pointfound:
+            self.hiddenpointfound = True
+            # means that hidden points will continue to be checked for
+
+
+    def checkHiddenPointColumn(self, index):
+        # haven't tested whether this works yet, so it isn't called
+        self.uniquenumbers = []
+
+        for j in range(len(self.testgrid)):
+            for number in self.testgrid[j][index]:
+                self.uniquenumbers.append(number)
+
+        self.uniquenumbers = ([x for x in self.uniquenumbers if self.uniquenumbers.count(x)==1])
+        
+        pointfound = False
+        for a in range (len(self.testgrid)):
+
             for x in self.uniquenumbers:
 
-                if x in array[1]:
-                    self.testgrid[self.currenty][array[0]] = x
-                    self.testgridfixed[self.currenty][array[0]] = 3
-                    self.fixedpointfound = True        
+                if x in self.testgrid[a][index]:
+                    if len(self.testgrid[a][index]) != 1:
 
-    def checkHiddenValueColumn(self):
+                        self.testgrid[a][index] = [x]
+                        self.testgridfixed[a][index] = 3
+
+                        self.removing(x, a, index)
+                        pointfound = True
+
+        # fixed point when found, meaning that cant be compared as not a lsit anymore, make a new copy? or, havent deleted other isntances of that number yet in row and column, try that first, then when comapring check if isintance list.
+        if pointfound:
+            self.hiddenpointfound = True
+
+
+    def checkHiddenPointBox(self, index):
+        # not coded yet
         pass
 
-    def checkHiddenValueBox(self):
-        pass
+
+    def removing(self, toRemove, row, column):
+        # a function which removes a hidden points value from the possible values of the elements in its row, box, and column
+        for i in range(9):
+            # goes through every line of row and column
+            if toRemove in self.testgrid[row][i]:
+                # iteration of the for loop refers to the column
+                if column == i:
+                    pass
+                # if it is the fixed point, it should not be removed
+                else:
+                    self.testgrid[row][i].remove(toRemove)
+                    # the number is removed from that elements array of possible values
+
+                    if len(self.testgrid[row][i]) == 1:
+                        # if the element that has been removed from now has a length of 1, it becomes a new fixed point, and is passed recursively into this function to be removed from its neighbours
+                        self.testgridfixed[row][i] = 3
+                        self.removing(self.testgrid[row][i][0], row, i)
+                    
+            if toRemove in self.testgrid[i][column]:
+                # iteration of the for loop refers to the row
+                if row == i:
+                    pass
+                # if it is the fixed point, it should not be removed
+                else:
+                    self.testgrid[i][column].remove(toRemove)
+                    # the number is removed from that elements array of possible values
+
+                    if len(self.testgrid[i][column]) == 1:
+                        # if the element that has been removed from now has a length of 1, it becomes a new fixed point, and is passed recursively into this function to be removed from its neighbours
+                        self.testgridfixed[i][column] = 3
+                        self.removing(self.testgrid[i][column][0], i, column)
+
+        # will remove the value also from all the other elements in its box
+        topleftbox = [0,0]
+        topleftbox[0] = column - (column % 3)
+        topleftbox[1] = row - (row % 3)
+        # finds top left of box by subtracting mod of 3 (as there are 3 lines per box)
+
+        for i in range(3):
+            for j in range(3):
+                # goes through every element in the box
+                if toRemove in self.testgrid[topleftbox[1] + i][topleftbox[0] + j]:
+                    if topleftbox[1] + i == row and topleftbox[0] + j == column:
+                        pass
+                    # if it is the hidden point, it should not be removed
+                    else:
+                        self.testgrid[topleftbox[1] + i][topleftbox[0] + j].remove(toRemove)
+
+                        if len(self.testgrid[topleftbox[1] + i][topleftbox[0]+j]) == 1:
+                            # if the element that has been removed from now has a length of 1, it becomes a new fixed point, and is passed recursively into this function to be removed from its neighbours                  
+                            self.testgridfixed[topleftbox[1] + i][topleftbox[0] + j] = 3
+                            self.removing(self.testgrid[topleftbox[1] + i][topleftbox[0] + j][0], topleftbox[1] + i, topleftbox[0]+j)
+
+
+    def dryrun(self):
+        for y in range(9):
+            self.currenty = y
+            for x in range(9):
+                self.currentx = x
+                # goes through each element
+                if self.testgridfixed[y][x] == 0:
+                # if not fixed
+                    self.numbers = []
+                    # will store all the numbers that are valid for that element
+
+                    for n in range(9):
+                        # if still numbers to go through
+                        self.currentnumber = n + 1
+                        self.testgrid[y][x] = self.currentnumber
+
+                        if(self.checkRow() and self.checkColumn() and self.checkBox()):
+                        # checks if the number is valid by sudoku rules
+                            self.numbers.append(self.currentnumber)
+                    
+
+                    self.testgrid[y][x] = self.numbers
+                    # that elements index in the array is set to all the possible numbers it can take
+
+        for p in range (len(self.testgrid)):
+            for q in range(len(self.testgrid[p])):
+                if isinstance(self.testgrid[p][q], int):
+                    self.testgrid[p][q] = [self.testgrid[p][q]]
+        # all the given fixed points are currently stored as integers, so they are changed to be stored as a single element list
+
+        for i in range(9):
+            for j in range(9):
+                if len(self.testgrid[i][j]) == 1 and self.testgridfixed[i][j] == 0:
+                    self.testgridfixed[i][j] = 3
+                    self.removing(self.testgrid[i][j][0], i, j)
+        # first checks to see if there are any elements with only one possible value
+        
+        self.hiddenpointfound = True
+        while self.hiddenpointfound:
+            # while there are still hidden points to be found
+            self.hiddenpointfound = False
+
+
+            for i in range(9):
+                self.checkHiddenPointRow(i)
+                #self.checkHiddenPointColumn(i)
+                #self.checkHiddenPointBox(i)
+
+        
+        for i in range(len(self.testgrid)):
+            for j in range(len(self.testgrid)):
+                if len(self.testgrid[i][j]) == 1:
+                    self.testgrid[i][j] = self.testgrid[i][j][0]
+                else:
+                    self.testgrid[i][j] = 0
+        # goes through the arrays of every elements possible numbers, if it is not a fixed point, it is set to 0
+
+        self.currentx = 0
+        self.currenty = 0
+        self.currentnumber = 0
+        # the current values are reset
+        self.draw()
 
 
 Sudoku1 = Sudoku()
 Sudoku1.dryrun()
-Sudoku1.draw()
 pygame.quit()
