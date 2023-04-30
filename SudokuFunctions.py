@@ -454,3 +454,17 @@ class Sudoku():
                         [0, 0, 0, 0, 0, 0, 0, 0, 0],
                         [0, 0, 0, 0, 0, 0, 0, 0, 0],
                         [0, 0, 0, 0, 0, 0, 0, 0, 0]]
+        
+
+    def checkGrid(self):
+        validgrid = True
+    
+        for y in range (len(self.grid)):
+            for x in range (len(self.grid[y])):
+                self.currentnumber = self.grid[y][x]
+                if self.currentnumber != 0:
+                    if self.checkBox() and self.checkColumn() and self.checkRow():
+                        pass
+                    else:
+                        validgrid = False
+        return validgrid

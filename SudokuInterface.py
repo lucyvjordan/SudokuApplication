@@ -28,6 +28,7 @@ class sudokuInterface():
 
     def input(self):
         running = True
+        valid = True
         while running:
             pygame.display.set_caption("Sudoku Solver")
             win.fill("white")
@@ -37,6 +38,7 @@ class sudokuInterface():
                     running = False
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
+                    valid = True
                     mousex, mousey = pygame.mouse.get_pos()
                     if self.origin[0] < mousex < self.origin[0] + (9*50) and self.origin[1] < mousey < self.origin[1] + (9*50):
                         xposition = int((mousex - self.origin[0]) / 50)
@@ -54,8 +56,15 @@ class sudokuInterface():
 
             keys = pygame.key.get_pressed()
             if keys[pygame.K_s]:
-                self.draw()
-            
+                valid = self.sudokufunctions.checkGrid()
+                if valid:
+                    self.draw()
+
+            if not valid:
+                invalidtext = self.textfont.render("The values you have entered create an invalid grid.", False, self.black)
+                invalidtext_rect = invalidtext.get_rect(center=(pygame.display.get_surface().get_width()/2, 45))
+                win.blit(invalidtext, invalidtext_rect) 
+
             screentext = self.textfont.render("Input your known values, and then press 'S' to solve.", False, self.black)
             screentext_rect = screentext.get_rect(center=(pygame.display.get_surface().get_width()/2, 20))
             win.blit(screentext, screentext_rect)
