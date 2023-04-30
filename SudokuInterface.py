@@ -39,8 +39,11 @@ class sudokuInterface():
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     valid = True
+                    # error message about invalid grid is removed
+
                     mousex, mousey = pygame.mouse.get_pos()
                     if self.origin[0] < mousex < self.origin[0] + (9*50) and self.origin[1] < mousey < self.origin[1] + (9*50):
+                        # if the mouse has been clicked within the grid
                         xposition = int((mousex - self.origin[0]) / 50)
                         yposition = int((mousey - self.origin[1]) / 50)
                         # finds which box is being clicked
@@ -59,15 +62,19 @@ class sudokuInterface():
                 valid = self.sudokufunctions.checkGrid()
                 if valid:
                     self.draw()
+                    self.resetgrid()
+            # if 's' is pressed and all the entered values follow sudoku rules, the grid is allowed 
 
             if not valid:
-                invalidtext = self.textfont.render("The values you have entered create an invalid grid.", False, self.black)
+                invalidtext = self.textfont.render("The values you have entered create an invalid grid.", False, self.red)
                 invalidtext_rect = invalidtext.get_rect(center=(pygame.display.get_surface().get_width()/2, 45))
                 win.blit(invalidtext, invalidtext_rect) 
+            # if invalid values have been entered, an error message is shown
 
             screentext = self.textfont.render("Input your known values, and then press 'S' to solve.", False, self.black)
             screentext_rect = screentext.get_rect(center=(pygame.display.get_surface().get_width()/2, 20))
             win.blit(screentext, screentext_rect)
+            # this text tells the user what to do
 
             for y in range(len(self.sudokufunctions.grid)):
                 for x in range(len(self.sudokufunctions.grid[y])):
@@ -75,7 +82,7 @@ class sudokuInterface():
                     pygame.draw.rect(win, self.black, (self.origin[0]+(x*50) , self.origin[1]+(y*50), 50, 50), 1)
                     # draws each elements box
                     if self.sudokufunctions.grid[y][x] != 0:
-                        text = self.font.render(str(self.sudokufunctions.grid[y][x]), False, self.black) 
+                        text = self.boldfont.render(str(self.sudokufunctions.grid[y][x]), False, self.black) 
                         # the number will be bold if it is fixed
                         text_rect = text.get_rect(center=(self.origin[0]+25+(x*50) , self.origin[1]+25+(y*50)))
                         win.blit(text, text_rect)
@@ -102,20 +109,23 @@ class sudokuInterface():
                     running = False
 
             if not solution:
-                solving_text = self.font.render("No solution", False, self.blue)
-                solving_text_rect = solving_text.get_rect(center=(pygame.display.get_surface().get_width()/2, 25))
-                win.blit(solving_text, solving_text_rect)
+                self.resetgrid()
+                solving_text = self.font.render("No solution", False, self.red)
+            # if no solution is found
+
             else:
                 if self.sudokufunctions.solving:
                     self.sudokufunctions.solve()
                     solving_text = self.font.render("Solving...", False, self.blue)
-                    solving_text_rect = solving_text.get_rect(center=(pygame.display.get_surface().get_width()/2, 25))
-                    win.blit(solving_text, solving_text_rect)
+                # if the program is in the process of solving the sudoku
+
                 else:
                     solving_text = self.font.render("Solved", False, self.blue)
-                    solving_text_rect = solving_text.get_rect(center=(pygame.display.get_surface().get_width()/2, 25))
-                    win.blit(solving_text, solving_text_rect)
                     print("time: %s" %(time.time()-start_time))
+                # if the program has solved the sudoku
+
+            solving_text_rect = solving_text.get_rect(center=(pygame.display.get_surface().get_width()/2, 25))
+            win.blit(solving_text, solving_text_rect)
 
             for y in range(len(self.sudokufunctions.grid)):
                 for x in range(len(self.sudokufunctions.grid[y])):
@@ -123,7 +133,10 @@ class sudokuInterface():
                     pygame.draw.rect(win, self.black, (self.origin[0]+(x*50) , self.origin[1]+(y*50), 50, 50), 1)
                     # draws each elements box
                     if self.sudokufunctions.grid[y][x] != 0:
-                        text = self.font.render(str(self.sudokufunctions.grid[y][x]), False, self.black) 
+                        if self.sudokufunctions.gridfixed[y][x] == 1:
+                            text = self.boldfont.render(str(self.sudokufunctions.grid[y][x]), False, self.black)
+                        else: 
+                            text = self.font.render(str(self.sudokufunctions.grid[y][x]), False, self.black)
                         # the number will be bold if it is fixed
                         text_rect = text.get_rect(center=(self.origin[0]+25+(x*50) , self.origin[1]+25+(y*50)))
                         win.blit(text, text_rect)
@@ -135,6 +148,29 @@ class sudokuInterface():
                     # draws the thicker 3x3 boxes
 
             pygame.display.update()
+    
+
+    def resetgrid(self):
+        # resets the grid to empty
+        self.sudokufunctions.grid = [[0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0]]
+        
+        self.sudokufunctions.gridfixed = [[0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0]]
 
 if __name__ == "__main__":
     # this is true when the program starts running

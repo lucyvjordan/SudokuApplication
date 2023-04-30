@@ -12,14 +12,14 @@ class Sudoku():
     def __init__(self):
 
         self.grid = [[0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0]]
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0]]
         
         self.gridfixed = [[0, 0, 0, 0, 0, 0, 0, 0, 0],
                         [0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -413,9 +413,10 @@ class Sudoku():
                 # index not passed to this one, because doing so would mean only boxes 1, 5, and 9 are checked
                 # (index goes diagonally down and right - which works for row and column, but not for boxes)
 
+            print(self.grid)
+
             if self.solution == False:
                 self.solving = False
-                self.resetgrid()
                 return False
 
 
@@ -433,38 +434,23 @@ class Sudoku():
         # the current values are reset
 
         return True
-
-    def resetgrid(self):
-        self.grid = [[0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0]]
-        
-        self.gridfixed = [[0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0]]
         
 
     def checkGrid(self):
+        # checks whether the entered values by user are valid
         validgrid = True
     
         for y in range (len(self.grid)):
             for x in range (len(self.grid[y])):
                 self.currentnumber = self.grid[y][x]
+                self.currenty = y
+                self.currentx = x
                 if self.currentnumber != 0:
+                # if it supposed to be empty it will contain a 0, so any non-0 value has been entered by the user
                     if self.checkBox() and self.checkColumn() and self.checkRow():
                         pass
                     else:
                         validgrid = False
+                    # if the entered number is in the row, column, or box, then it is invalid
         return validgrid
+        # returns either True or False
