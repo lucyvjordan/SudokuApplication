@@ -2,10 +2,10 @@ import pygame
 import SudokuFunctions
 import time
 
-start_time = time.time()
+
 
 pygame.init()
-win = pygame.display.set_mode((500,550))
+win = pygame.display.set_mode((500,600))
 
 class sudokuInterface():
 
@@ -19,9 +19,11 @@ class sudokuInterface():
         self.black = (0, 0, 0)
         self.green = (0, 255, 0)
         self.red = (255, 0, 0)
-        self.blue = (0, 0, 255)    
+        self.blue = (0, 0, 255)  
+        self.white = (255, 255, 255)
+        self.backgroundcolour = (102, 153, 155)  
 
-        self.origin = [25,75]
+        self.origin = [25,125]
         # origin is the top left of the grid
         # defines this so that the grisd can be moved without manually changing the location of all drawn elements
 
@@ -31,7 +33,7 @@ class sudokuInterface():
         valid = True
         while running:
             pygame.display.set_caption("Sudoku Solver")
-            win.fill("white")
+            win.fill(self.backgroundcolour)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -61,48 +63,32 @@ class sudokuInterface():
             if keys[pygame.K_s]:
                 valid = self.sudokufunctions.checkGrid()
                 if valid:
-                    self.draw()
+                    self.solving()
                     self.resetgrid()
             # if 's' is pressed and all the entered values follow sudoku rules, the grid is allowed 
 
             if not valid:
-                invalidtext = self.textfont.render("The values you have entered create an invalid grid.", False, self.red)
-                invalidtext_rect = invalidtext.get_rect(center=(pygame.display.get_surface().get_width()/2, 45))
+                invalidtext = self.textfont.render("The values you have entered create an invalid grid.", False, self.white)
+                invalidtext_rect = invalidtext.get_rect(center=(pygame.display.get_surface().get_width()/2, 100))
                 win.blit(invalidtext, invalidtext_rect) 
             # if invalid values have been entered, an error message is shown
 
             screentext = self.textfont.render("Input your known values, and then press 'S' to solve.", False, self.black)
-            screentext_rect = screentext.get_rect(center=(pygame.display.get_surface().get_width()/2, 20))
-            win.blit(screentext, screentext_rect)
-            # this text tells the user what to do
 
-            for y in range(len(self.sudokufunctions.grid)):
-                for x in range(len(self.sudokufunctions.grid[y])):
-                    # goes through every element of the grid
-                    pygame.draw.rect(win, self.black, (self.origin[0]+(x*50) , self.origin[1]+(y*50), 50, 50), 1)
-                    # draws each elements box
-                    if self.sudokufunctions.grid[y][x] != 0:
-                        text = self.boldfont.render(str(self.sudokufunctions.grid[y][x]), False, self.black) 
-                        # the number will be bold if it is fixed
-                        text_rect = text.get_rect(center=(self.origin[0]+25+(x*50) , self.origin[1]+25+(y*50)))
-                        win.blit(text, text_rect)
-                        # draws each elements number if it is not supposed to be empty
 
-            for y in range(3):
-                for x in range(3):
-                    pygame.draw.rect(win, self.black, (self.origin[0]+(x*150), self.origin[1]+(y*150), 150, 150), 4)
-                    # draws the thicker 3x3 boxes
+            self.drawgrid(screentext)
 
             pygame.display.update()
 
 
-    def draw(self):
+    def solving(self):
+        start_time = time.time()
         solution = self.sudokufunctions.dryrun()
 
         running = True
         while running:
             pygame.display.set_caption("Sudoku Solver")
-            win.fill("white")
+            win.fill(self.backgroundcolour)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -110,45 +96,58 @@ class sudokuInterface():
 
             if not solution:
                 self.resetgrid()
-                solving_text = self.font.render("No solution", False, self.red)
+                screen_text = self.font.render("No solution", False, self.white)
             # if no solution is found
 
             else:
                 if self.sudokufunctions.solving:
                     self.sudokufunctions.solve()
-                    solving_text = self.font.render("Solving...", False, self.blue)
+                    screen_text = self.font.render("Solving...", False, self.blue)
                 # if the program is in the process of solving the sudoku
 
                 else:
-                    solving_text = self.font.render("Solved", False, self.blue)
+                    screen_text = self.font.render("Solved", False, self.blue)
                     print("time: %s" %(time.time()-start_time))
                 # if the program has solved the sudoku
 
-            solving_text_rect = solving_text.get_rect(center=(pygame.display.get_surface().get_width()/2, 25))
-            win.blit(solving_text, solving_text_rect)
 
-            for y in range(len(self.sudokufunctions.grid)):
-                for x in range(len(self.sudokufunctions.grid[y])):
-                    # goes through every element of the grid
-                    pygame.draw.rect(win, self.black, (self.origin[0]+(x*50) , self.origin[1]+(y*50), 50, 50), 1)
-                    # draws each elements box
-                    if self.sudokufunctions.grid[y][x] != 0:
-                        if self.sudokufunctions.gridfixed[y][x] == 1:
-                            text = self.boldfont.render(str(self.sudokufunctions.grid[y][x]), False, self.black)
-                        else: 
-                            text = self.font.render(str(self.sudokufunctions.grid[y][x]), False, self.black)
-                        # the number will be bold if it is fixed
-                        text_rect = text.get_rect(center=(self.origin[0]+25+(x*50) , self.origin[1]+25+(y*50)))
-                        win.blit(text, text_rect)
-                        # draws each elements number
-
-            for y in range(3):
-                for x in range(3):
-                    pygame.draw.rect(win, self.black, (self.origin[0]+(x*150), self.origin[1]+(y*150), 150, 150), 4)
-                    # draws the thicker 3x3 boxes
+            self.drawgrid(screen_text)
 
             pygame.display.update()
     
+
+    def drawgrid(self, screen_text):
+
+        title_text = self.font.render("Sudoku Solver", False, self.white)
+        title_text_rect = title_text.get_rect(center=(pygame.display.get_surface().get_width()/2, 35))
+        win.blit(title_text, title_text_rect)
+
+        for y in range(len(self.sudokufunctions.grid)):
+            for x in range(len(self.sudokufunctions.grid[y])):
+                # goes through every element of the grid
+                box = pygame.draw.rect(win, self.black, (self.origin[0]+(x*50) , self.origin[1]+(y*50), 50, 50), 0)
+                win.fill(self.white, box.inflate(-1, -1))
+
+                # draws each elements box
+                if self.sudokufunctions.grid[y][x] != 0:
+                    if self.sudokufunctions.grid[y][x] != 0:
+                        if self.sudokufunctions.gridfixed[y][x] == 1:
+                            text = self.boldfont.render(str(self.sudokufunctions.grid[y][x]), False, self.black)
+                        else:
+                            text = self.font.render(str(self.sudokufunctions.grid[y][x]), False, self.black)
+                        # the number will be bold if it is fixed
+                    text_rect = text.get_rect(center=(self.origin[0]+25+(x*50) , self.origin[1]+25+(y*50)))
+                    win.blit(text, text_rect)
+                    # draws each elements number if it is not supposed to be empty
+
+        for y in range(3):
+            for x in range(3):
+                pygame.draw.rect(win, self.black, (self.origin[0]+(x*150), self.origin[1]+(y*150), 150, 150), 4)
+                # draws the thicker 3x3 boxes
+
+        screen_text_rect = screen_text.get_rect(center=(pygame.display.get_surface().get_width()/2, 75))
+        win.blit(screen_text, screen_text_rect)
+
 
     def resetgrid(self):
         # resets the grid to empty
