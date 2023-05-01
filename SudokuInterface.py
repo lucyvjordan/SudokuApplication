@@ -12,6 +12,7 @@ class sudokuInterface():
     def __init__(self):
 
         self.sudokufunctions = SudokuFunctions.Sudoku()
+        self.quitting = False
 
         self.font = pygame.font.SysFont('Consolas', 25, bold=False)
         self.textfont = pygame.font.SysFont('Consolas', 16, bold=True)        
@@ -37,7 +38,7 @@ class sudokuInterface():
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    running = False
+                    pygame.quit()
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     valid = True
@@ -63,8 +64,7 @@ class sudokuInterface():
             if keys[pygame.K_s]:
                 valid = self.sudokufunctions.checkGrid()
                 if valid:
-                    self.solving()
-                    self.resetgrid()
+                    return
             # if 's' is pressed and all the entered values follow sudoku rules, the grid is allowed 
 
             if not valid:
@@ -74,7 +74,6 @@ class sudokuInterface():
             # if invalid values have been entered, an error message is shown
 
             screentext = self.textfont.render("Input your known values, and then press 'S' to solve.", False, self.black)
-
 
             self.drawgrid(screentext)
 
@@ -92,21 +91,33 @@ class sudokuInterface():
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    running = False
+                    pygame.quit()
+
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_c] and not self.sudokufunctions.solving:
+                self.resetgrid()
 
             if not solution:
-                self.resetgrid()
-                screen_text = self.font.render("No solution", False, self.white)
-            # if no solution is found
+                self.sudokufunctions.grid = [[0, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 0, 0, 0, 0, 0, 0, 0, 0]]
+                screen_text = self.textfont.render("No Solution. Press 'C' to reset.", False, self.blue)
+            # if no solution is found - it has already reset, but this is so that the grid is empty when it shows the 'no solution' message
 
             else:
                 if self.sudokufunctions.solving:
                     self.sudokufunctions.solve()
-                    screen_text = self.font.render("Solving...", False, self.blue)
+                    screen_text = self.textfont.render("Solving...", False, self.blue)
                 # if the program is in the process of solving the sudoku
 
                 else:
-                    screen_text = self.font.render("Solved", False, self.blue)
+                    screen_text = self.textfont.render("Solution Found. Press 'C' to reset.", False, self.blue)
                     print("time: %s" %(time.time()-start_time))
                 # if the program has solved the sudoku
 
@@ -151,28 +162,13 @@ class sudokuInterface():
 
     def resetgrid(self):
         # resets the grid to empty
-        self.sudokufunctions.grid = [[0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0]]
-        
-        self.sudokufunctions.gridfixed = [[0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0]]
+        self.sudokufunctions = SudokuFunctions.Sudoku()
+        sudoku.input()
+        sudoku.solving()
+
 
 if __name__ == "__main__":
     # this is true when the program starts running
     sudoku = sudokuInterface()
-    sudoku.input()
+    sudoku.resetgrid()
     # keeps the menu running
