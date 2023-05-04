@@ -1,8 +1,7 @@
 import pygame
 import SudokuFunctions
 import time
-
-
+import sys,os
 
 pygame.init()
 win = pygame.display.set_mode((500,600))
@@ -10,10 +9,6 @@ win = pygame.display.set_mode((500,600))
 class sudokuInterface():
 
     def __init__(self):
-
-        self.sudokufunctions = SudokuFunctions.Sudoku()
-        self.quitting = False
-
         self.font = pygame.font.SysFont('Consolas', 25, bold=False)
         self.textfont = pygame.font.SysFont('Consolas', 16, bold=True)        
         self.boldfont = pygame.font.SysFont('Consolas', 25, bold=True)
@@ -22,7 +17,7 @@ class sudokuInterface():
         self.red = (255, 0, 0)
         self.blue = (0, 0, 255)  
         self.white = (255, 255, 255)
-        self.backgroundcolour = (102, 153, 155)  
+        self.backgroundcolour = (50, 151, 194)
 
         self.origin = [25,125]
         # origin is the top left of the grid
@@ -34,11 +29,18 @@ class sudokuInterface():
         valid = True
         while running:
             pygame.display.set_caption("Sudoku Solver")
-            win.fill(self.backgroundcolour)
+
+            try:
+                win.blit(pygame.image.load(os.path.join(sys.path[0],"background.png")), (0,0))
+            except:
+                win.fill(self.backgroundcolour)
+            # so that an error does not occur if the file can't be found or is in the wrong folder
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    self.quitting = True
                     pygame.quit()
+                    sys.exit()
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     valid = True
@@ -69,7 +71,7 @@ class sudokuInterface():
 
             if not valid:
                 invalidtext = self.textfont.render("The values you have entered create an invalid grid.", False, self.white)
-                invalidtext_rect = invalidtext.get_rect(center=(pygame.display.get_surface().get_width()/2, 100))
+                invalidtext_rect = invalidtext.get_rect(center=(pygame.display.get_surface().get_width()/2, 105))
                 win.blit(invalidtext, invalidtext_rect) 
             # if invalid values have been entered, an error message is shown
 
@@ -87,11 +89,18 @@ class sudokuInterface():
         running = True
         while running:
             pygame.display.set_caption("Sudoku Solver")
-            win.fill(self.backgroundcolour)
+
+            try:
+                win.blit(pygame.image.load(os.path.join(sys.path[0],"background.png")), (0,0))
+            except:
+                win.fill(self.backgroundcolour)
+            # so that an error does not occur if the file can't be found or is in the wrong folder
+
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
+                    sys.exit()
 
             keys = pygame.key.get_pressed()
             if keys[pygame.K_c] and not self.sudokufunctions.solving:
@@ -121,13 +130,14 @@ class sudokuInterface():
                     print("time: %s" %(time.time()-start_time))
                 # if the program has solved the sudoku
 
-
             self.drawgrid(screen_text)
 
             pygame.display.update()
     
 
     def drawgrid(self, screen_text):
+
+        pygame.draw.rect(win, self.black, (0, 10, 500, 45), 0)
 
         title_text = self.font.render("Sudoku Solver", False, self.white)
         title_text_rect = title_text.get_rect(center=(pygame.display.get_surface().get_width()/2, 35))
@@ -156,6 +166,7 @@ class sudokuInterface():
                 pygame.draw.rect(win, self.black, (self.origin[0]+(x*150), self.origin[1]+(y*150), 150, 150), 4)
                 # draws the thicker 3x3 boxes
 
+        pygame.draw.rect(win, self.white, (0, 59, 500, 30), 0)
         screen_text_rect = screen_text.get_rect(center=(pygame.display.get_surface().get_width()/2, 75))
         win.blit(screen_text, screen_text_rect)
 
