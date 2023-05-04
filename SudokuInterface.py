@@ -13,9 +13,7 @@ class sudokuInterface():
         self.textfont = pygame.font.SysFont('Consolas', 16, bold=True)        
         self.boldfont = pygame.font.SysFont('Consolas', 25, bold=True)
         self.black = (0, 0, 0)
-        self.green = (0, 255, 0)
-        self.red = (255, 0, 0)
-        self.blue = (0, 0, 255)  
+        self.blue = (35, 100, 255)  
         self.white = (255, 255, 255)
         self.backgroundcolour = (50, 151, 194)
 
@@ -40,7 +38,6 @@ class sudokuInterface():
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.quitting = True
                     pygame.quit()
                     sys.exit()
 
@@ -145,7 +142,7 @@ class sudokuInterface():
                             [0, 0, 0, 0, 0, 0, 0, 0, 0],
                             [0, 0, 0, 0, 0, 0, 0, 0, 0],
                             [0, 0, 0, 0, 0, 0, 0, 0, 0]]
-                screen_text = self.textfont.render("No Solution. Press 'C' to reset.", False, self.blue)
+                screen_text = self.textfont.render("No solution. Press 'C' to reset.", False, self.blue)
             # if no solution is found - it has already reset, but this is so that the grid is empty when it shows the 'no solution' message
 
             else:
@@ -155,7 +152,7 @@ class sudokuInterface():
                 # if the program is in the process of solving the sudoku
 
                 else:
-                    screen_text = self.textfont.render("Solution Found. Press 'C' to reset.", False, self.blue)
+                    screen_text = self.textfont.render("Solution found. Press 'C' to reset.", False, self.blue)
                     print("time: %s" %(time.time()-start_time))
                 # if the program has solved the sudoku
 
@@ -168,7 +165,7 @@ class sudokuInterface():
 
         pygame.draw.rect(win, self.black, (0, 10, 500, 45), 0)
 
-        title_text = self.font.render("Sudoku Solver", False, self.white)
+        title_text = self.font.render("- - - - - - - - Sudoku Solver - - - - - - - -", False, self.white)
         title_text_rect = title_text.get_rect(center=(pygame.display.get_surface().get_width()/2, 35))
         win.blit(title_text, title_text_rect)
 
@@ -196,7 +193,7 @@ class sudokuInterface():
                 # draws the thicker 3x3 boxes
 
         if self.selected != [-1,-1]:
-            box = pygame.draw.rect(win, self.green, (self.origin[0]+(self.selected[0]*50) , self.origin[1]+(self.selected[1]*50), 50, 50), 3)
+            box = pygame.draw.rect(win, self.blue, (self.origin[0]+(self.selected[0]*50) , self.origin[1]+(self.selected[1]*50), 50, 50), 3)
         # draws a green box around the selected box
 
         pygame.draw.rect(win, self.white, (0, 59, 500, 30), 0)
