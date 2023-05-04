@@ -28,7 +28,7 @@ class sudokuInterface():
 
     def input(self):
         running = True
-        valid = True
+        validmessage = ""
         while running:
             pygame.display.set_caption("Sudoku Solver")
 
@@ -45,7 +45,7 @@ class sudokuInterface():
                     sys.exit()
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    valid = True
+                    validmessage = ""
                     # error message about invalid grid is removed
 
                     mousex, mousey = pygame.mouse.get_pos()
@@ -82,8 +82,8 @@ class sudokuInterface():
             keys = pygame.key.get_pressed()
 
             if keys[pygame.K_s]:
-                valid = self.sudokufunctions.checkGrid()
-                if valid:
+                validmessage = self.sudokufunctions.checkGrid()
+                if validmessage == "":
                     self.selected = [-1,-1]
                     return
             # if 's' is pressed and all the entered values follow sudoku rules, the grid is allowed 
@@ -93,9 +93,13 @@ class sudokuInterface():
                     self.sudokufunctions.grid[self.selected[1]][self.selected[0]] = 0
                     self.sudokufunctions.gridfixed[self.selected[1]][self.selected[0]] = 0
             # removes the value from the selected box
-            
-            if not valid:
-                invalidtext = self.textfont.render("The values you have entered create an invalid grid.", False, self.white)
+
+            if validmessage != "":
+                print("HI")
+                if validmessage == "invalid":
+                    invalidtext = self.textfont.render("The values you have entered create an invalid grid.", False, self.white)
+                else:
+                    invalidtext = self.textfont.render("Please enter some values.", False, self.white)
                 invalidtext_rect = invalidtext.get_rect(center=(pygame.display.get_surface().get_width()/2, 105))
                 win.blit(invalidtext, invalidtext_rect) 
             # if invalid values have been entered, an error message is shown

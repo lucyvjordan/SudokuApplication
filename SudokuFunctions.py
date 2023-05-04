@@ -1,13 +1,3 @@
-import pygame
-import time
-
-start_time = time.time()
-clock = pygame.time.Clock()
-
-pygame.init()
-win = pygame.display.set_mode((500,500))
-
-
 class Sudoku():
     def __init__(self):
 
@@ -438,7 +428,8 @@ class Sudoku():
 
     def checkGrid(self):
         # checks whether the entered values by user are valid
-        validgrid = True
+        validgrid = ""
+        empty = True
     
         for y in range (len(self.grid)):
             for x in range (len(self.grid[y])):
@@ -446,11 +437,14 @@ class Sudoku():
                 self.currenty = y
                 self.currentx = x
                 if self.currentnumber != 0:
-                # if it supposed to be empty it will contain a 0, so any non-0 value has been entered by the user
+                # if it supposed to be empty it will contain a 0, so only non-0 values have been entered by the user
+                    empty = False
                     if self.checkBox() and self.checkColumn() and self.checkRow():
                         pass
                     else:
-                        validgrid = False
+                        validgrid = "invalid"
                     # if the entered number is in the row, column, or box, then it is invalid
+        if empty:
+            validgrid = "empty"
         return validgrid
         # returns either True or False
