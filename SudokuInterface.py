@@ -23,6 +23,8 @@ class sudokuInterface():
         # origin is the top left of the grid
         # defines this so that the grisd can be moved without manually changing the location of all drawn elements
 
+        self.selected = [-1,-1]
+
 
     def input(self):
         running = True
@@ -52,30 +54,47 @@ class sudokuInterface():
                         xposition = int((mousex - self.origin[0]) / 50)
                         yposition = int((mousey - self.origin[1]) / 50)
                         # finds which box is being clicked
-                    
-                        if self.sudokufunctions.grid[yposition][xposition] == 9:
+
+                        self.selected = [xposition, yposition]
+                        self.sudokufunctions.gridfixed[yposition][xposition] = 1
+
+                        '''if self.sudokufunctions.grid[yposition][xposition] == 9:
                             self.sudokufunctions.grid[yposition][xposition] = 0
                             self.sudokufunctions.gridfixed[yposition][xposition] = 0
                             # if it already contains 9, loop back to the start and make the box empty
                         else:
                             self.sudokufunctions.grid[yposition][xposition] += 1
                             self.sudokufunctions.gridfixed[yposition][xposition] = 1
-                            # otherwise increase the box value by 1
+                            # otherwise increase the box value by 1'''
+                        # this was used to input the numbers by clicking on the box, but now numbers are entered with the keyboard
+                    else:
+                        self.selected = [-1,-1]
+                        # unselects whichever box is being entered in
+
+                    
+                if event.type == pygame.KEYDOWN:
+                    if event.unicode.isdigit() and self.selected != [-1,-1]:  
+                        # if key pressed is a number and a box has been selected
+                        if int(event.unicode) != 0:
+                            # if the number pressed is not 0
+                            self.sudokufunctions.grid[yposition][xposition] = event.unicode
 
             keys = pygame.key.get_pressed()
+
             if keys[pygame.K_s]:
                 valid = self.sudokufunctions.checkGrid()
                 if valid:
+                    self.selected = [-1,-1]
                     return
             # if 's' is pressed and all the entered values follow sudoku rules, the grid is allowed 
-
+            
             if not valid:
                 invalidtext = self.textfont.render("The values you have entered create an invalid grid.", False, self.white)
                 invalidtext_rect = invalidtext.get_rect(center=(pygame.display.get_surface().get_width()/2, 105))
                 win.blit(invalidtext, invalidtext_rect) 
             # if invalid values have been entered, an error message is shown
 
-            screentext = self.textfont.render("Input your known values, and then press 'S' to solve.", False, self.black)
+            screentext = self.textfont.render("Enter your known values, and then press 'S' to solve.", False, self.black)
 
             self.drawgrid(screentext)
 
@@ -165,6 +184,10 @@ class sudokuInterface():
             for x in range(3):
                 pygame.draw.rect(win, self.black, (self.origin[0]+(x*150), self.origin[1]+(y*150), 150, 150), 4)
                 # draws the thicker 3x3 boxes
+
+        if self.selected != [-1,-1]:
+            box = pygame.draw.rect(win, self.green, (self.origin[0]+(self.selected[0]*50) , self.origin[1]+(self.selected[1]*50), 50, 50), 3)
+        # draws a green box around the selected box
 
         pygame.draw.rect(win, self.white, (0, 59, 500, 30), 0)
         screen_text_rect = screen_text.get_rect(center=(pygame.display.get_surface().get_width()/2, 75))
