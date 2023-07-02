@@ -15,13 +15,30 @@ class SudokuGenerator():
                     [0, 0, 0, 0, 0, 0, 0, 0, 0],
                     [0, 0, 0, 0, 0, 0, 0, 0, 0],
                     [0, 0, 0, 0, 0, 0, 0, 0, 0]]
+        
+        self.gridfixed = [[0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0]]
+        
+
         self.numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]
         self.currentcolumn = 0
         self.currentrow = 0
         self.gridsize = 9
+        self.solving = True
+        self.solution = True
+
+        self.removeCount = 0
+        self.removeTarget = 50
 
 
-    def generate(self):
+    def Generate(self):
         self.numbers = sorted(self.numbers, key=lambda k: random.random())
         self.grid[0] = self.numbers
         # shuffles the numbers 1-9 randomly and sets it as the first row
@@ -35,27 +52,49 @@ class SudokuGenerator():
         to see which number fits in that box according to sudoku rules, the order in which it goes through the 
         numbers is random which decreases the chance of getting repeated grids '''
 
-        while True:
-            
-            if self.grid[self.currentrow][self.currentcolumn] != self.numbers[-1]:
-                # if there are still numbers to go through for that box
-                if self.grid[self.currentrow][self.currentcolumn] == 0:
-                    self.grid[self.currentrow][self.currentcolumn] = self.numbers[0]
-                    # if that box currently contains a 0, then it hasnt been tested yet and so is set to the first number in the numbers array
+        self.Solve()
+
+        self.gridfixed = [[1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1]]
+        
+        self.RemoveNumbers()
+
+
+    def Solve(self):
+
+        while self.solving:
+            if self.gridfixed[self.currentrow][self.currentcolumn] == 0:
+                if self.grid[self.currentrow][self.currentcolumn] != self.numbers[-1]:
+                    # if there are still numbers to go through for that box
+                    if self.grid[self.currentrow][self.currentcolumn] == 0:
+                        self.grid[self.currentrow][self.currentcolumn] = self.numbers[0]
+                        # if that box currently contains a 0, then it hasnt been tested yet and so is set to the first number in the numbers array
+                    else:
+                        self.grid[self.currentrow][self.currentcolumn] = self.numbers[self.numbers.index(self.grid[self.currentrow][self.currentcolumn])+1]
+                        # otherwise, it finds the number in the numbers array that is after the current number the box contains
+                    self.currentnumber = self.grid[self.currentrow][self.currentcolumn]
+                    
+                    if(self.CheckRow() and self.CheckColumn() and self.CheckBox()):
+                    # checks if the number is valid by sudoku rules
+                        self.ToNextBox()
+
                 else:
-                    self.grid[self.currentrow][self.currentcolumn] = self.numbers[self.numbers.index(self.grid[self.currentrow][self.currentcolumn])+1]
-                    # otherwise, it finds the number in the numbers array that is after the current number the box contains
-                self.currentnumber = self.grid[self.currentrow][self.currentcolumn]
-                
-                if(self.checkRow() and self.checkColumn() and self.checkBox()):
-                # checks if the number is valid by sudoku rules
-                    self.toNextBox()
-
-            else:
-                self.toPreviousBox()
+                    self.ToPreviousBox()
+        
+        if self.solution:
+            return True
+        return False
 
 
-    def checkRow(self):
+
+    def CheckRow(self):
         # checks current row for another instance of the current number
 
         if self.grid[self.currentrow].count(self.currentnumber) > 1:
@@ -63,7 +102,7 @@ class SudokuGenerator():
         return True
 
 
-    def checkColumn(self):
+    def CheckColumn(self):
         # checks current column for another instance of the current number
 
         count = 0
@@ -75,7 +114,7 @@ class SudokuGenerator():
         return True
 
 
-    def checkBox(self):
+    def CheckBox(self):
         # checks current box for another instance of the current number
         topleftbox = [0,0]
 
@@ -95,14 +134,15 @@ class SudokuGenerator():
         return True
 
 
-    def toNextBox(self):
+    def ToNextBox(self):
         if self.currentcolumn == self.gridsize - 1:
             if self.currentrow == self.gridsize - 1:
             # if in the bottom right of the box, then the sudoku is solved
 
                 for i in range(9):
                     print(self.grid[i])
-                quit()
+                self.solving = False
+
             else:
                 self.currentrow += 1
                 self.currentcolumn = 0
@@ -112,19 +152,48 @@ class SudokuGenerator():
             self.currentcolumn += 1
 
 
-    def toPreviousBox(self):
-        self.grid[self.currentrow][self.currentcolumn] = 0
+    def ToPreviousBox(self):
+        if self.gridfixed[self.currentrow][self.currentcolumn] == 0:
+            self.grid[self.currentrow][self.currentcolumn] = 0
 
         if self.currentcolumn == 0:
-            self.currentrow -= 1
-            self.currentcolumn = 8
+            if self.currentrow == 0:
+                # if trying to go to previous box from top left of box, there is no solution
+                self.solving = False
+                self.solution = False
+            else:
+                self.currentrow -= 1
+                self.currentcolumn = 8
         # if in leftmost column, go up a row
+
         else:
             self.currentcolumn -= 1
 
+    def RemoveNumbers(self):
+        print(" ")
+        for i in range(9):
+            print(self.grid[i])
+        print(" ")
+        while self.removeCount < self.removeTarget:
+            toRemoveY = random.randint(0,8)
+            toRemoveX = random.randint(0,8)
+            temp = self.grid[toRemoveY][toRemoveX]
+            self.grid[toRemoveY][toRemoveX] = 0
+            self.gridfixed[toRemoveY][toRemoveX] = 0
+            # solve and if it can solve, go onto next
+            if self.Solve():
+                self.removeCount += 1
+                print(self.removeCount)
+                pass
+            else:
+                self.grid[toRemoveY][toRemoveX] = temp
+                self.gridfixed[toRemoveY][toRemoveX] = 1
+
+        for i in range(9):
+            print(self.grid[i])
 
 if __name__ == "__main__":
     # this is true when the program starts running
     sudoku = SudokuGenerator()
-    sudoku.generate()
+    sudoku.Generate()
     # keeps the menu running
