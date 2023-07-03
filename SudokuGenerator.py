@@ -34,7 +34,7 @@ class SudokuGenerator():
         self.currentrow = 0
         self.gridsize = 9
 
-        self.returning = False
+        self.backtracking = False
         self.solving = True
         self.solution = True
         self.solutioncount = 0
@@ -71,19 +71,21 @@ class SudokuGenerator():
             [1, 1, 1, 1, 1, 1, 1, 1, 1],
             [1, 1, 1, 1, 1, 1, 1, 1, 1],
             [1, 1, 1, 1, 1, 1, 1, 1, 1]]
+        # all values in the grid start as fixed points
         
         self.RemoveNumbers()
 
 
     def Solve(self):
 
-        self.returning = False
+        self.backtracking = False
+        # resets from previous iterations
 
         while self.solving:
 
             if self.gridfixed[self.currentrow][self.currentcolumn] == 0:
-
-                self.returning = False
+                # if the current number is not a fixed point then it can be changed
+                self.backtracking = False
                 if self.grid[self.currentrow][self.currentcolumn] != self.numbers[-1]:
                     # if there are still numbers to go through for that box
                     if self.grid[self.currentrow][self.currentcolumn] == 0:
@@ -100,21 +102,20 @@ class SudokuGenerator():
 
                 else:
                     self.ToPreviousBox()
+                    # if there are no values which work for this box, then needs to backtrack
             
             else:
-                if self.returning:
-                    # if returning and current box is fixed, keep returning
+                if self.backtracking:
+                    # if backtracking and current box is fixed, keep backtracking
                     self.ToPreviousBox()
 
                 else:
-                    # if the current box is fixed and not returning, skip this box
+                    # if the current box is fixed and not backtracking, skip this box
                     self.ToNextBox()
-
         
         if self.solution:
             return True
         return False
-
 
 
     def CheckRow(self):
@@ -165,23 +166,27 @@ class SudokuGenerator():
                 self.solutioncount += 1
                 if self.solutioncount == 1 and self.removingValues == True:
                     self.ToPreviousBox()
+                    # if we are in the process of removing values from the grid, and only one solution has been found, then backtrack
                 else:
                     self.solving = False
-
+                    # if we are not in the process of removing values, then the sudoku has been solved and the loop can stop
 
             else:
                 self.currentrow += 1
                 self.currentcolumn = 0
+                # if in the rightmost column, go down a row
                 if self.generating:
                     self.numbers = sorted(self.numbers, key=lambda k: random.random())
-                    # if in the rightmost column, go down a row
+                    # if currently generating the grid, then shuffle the number arrays for the next row
         else:
             self.currentcolumn += 1
+            # if not in the final column, then increment columns
 
 
     def ToPreviousBox(self):
         if self.gridfixed[self.currentrow][self.currentcolumn] == 0:
             self.grid[self.currentrow][self.currentcolumn] = 0
+            # if not a fixed point, reset box to 0
 
         if self.currentcolumn == 0:
             if self.currentrow == 0:
@@ -190,11 +195,12 @@ class SudokuGenerator():
             else:
                 self.currentrow -= 1
                 self.currentcolumn = 8
-        # if in leftmost column, go up a row
+                # if in leftmost column, go up a row
 
         else:
             self.currentcolumn -= 1
-        self.returning = True
+            # if not in leftmost column, decrement columns
+        self.backtracking = True
 
     def RemoveNumbers(self):
 
@@ -203,6 +209,7 @@ class SudokuGenerator():
 
         self.fullgrid = copy.deepcopy(self.grid)
         self.fullgridfixed = copy.deepcopy(self.gridfixed)
+        # copy the grid so that when it is being solved there is still a copy where values are removed
 
         availableLocations = []
         for x in range(9):
@@ -226,20 +233,24 @@ class SudokuGenerator():
 
             self.grid[removeLocation[0]][removeLocation[1]] = 0
             self.gridfixed[removeLocation[0]][removeLocation[1]] = 0
+            # remove the value from the grid
 
             self.solving = True
             self.solutioncount = 0
             self.currentrow = 0
             self.currentcolumn = 0
             self.numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+            # resetting variables needed for the solving function
 
             if self.Solve():
                 
                 if self.solutioncount == 1:
                     self.removeCount += 1
+                    # counts how many values have been removed
 
                     self.fullgrid[removeLocation[0]][removeLocation[1]] = 0
                     self.fullgridfixed[removeLocation[0]][removeLocation[1]] = 0
+                    # value can be removed from main grid as it creates a unique solution
                     attempts = 0
                     availableLocations.remove(removeLocation)
                     # removing this value gives a unique solution so it is removed from the full grid
@@ -254,10 +265,11 @@ class SudokuGenerator():
         print("\n")
         print(self.removeCount)
         print(time.time() - self.starttime)
+        # prints sudoku to terminal, how many values were removed and the time it took to generate
 
 
 if __name__ == "__main__":
     # this is true when the program starts running
     sudoku = SudokuGenerator()
     sudoku.Generate()
-    # keeps the menu running
+    # keeps the sudoku generator running
