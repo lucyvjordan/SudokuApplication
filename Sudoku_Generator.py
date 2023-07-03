@@ -39,6 +39,8 @@ class SudokuGenerator():
         self.solution = True
         self.solutioncount = 0
 
+        self.generating = False
+        # it is not generating as soon as the instance of the class is defined
 
         self.removingValues = False
         self.removeCount = 0
@@ -47,6 +49,7 @@ class SudokuGenerator():
 
 
     def Generate(self):
+        self.generating = True
         self.numbers = sorted(self.numbers, key=lambda k: random.random())
         self.grid[0] = self.numbers
         # shuffles the numbers 1-9 randomly and sets it as the first row
@@ -229,7 +232,7 @@ class SudokuGenerator():
             removeIndex = 0
             removed = False
 
-            while removeIndex < len(availableLocations):
+            while removeIndex < len(availableLocations) and self.removeCount < 55:
                 # goes through each item of array then shuffles again if a value was removed
                 # so stops running when it has gone through all available locations without removing one
                 
@@ -279,6 +282,11 @@ class SudokuGenerator():
         print(self.removeCount)
         print(time.time() - self.starttime)
         # prints sudoku to terminal, how many values were removed and the time it took to generate
+
+        self.grid = copy.deepcopy(self.fullgrid)
+        self.gridfixed = copy.deepcopy(self.fullgridfixed)
+        
+        self.generating = False
 
 
 if __name__ == "__main__":
