@@ -6,7 +6,7 @@ import sys,os
 pygame.init()
 win = pygame.display.set_mode((500,600))
 
-class sudokuInterface():
+class SudokuInterface():
 
     def __init__(self):
         self.font = pygame.font.SysFont('Consolas', 25, bold=False)
@@ -73,7 +73,7 @@ class sudokuInterface():
                         # if key pressed is a number and a box has been selected
                         if int(event.unicode) != 0:
                             # if the number pressed is not 0
-                            self.sudokufunctions.grid[self.selected[1]][self.selected[0]] = event.unicode
+                            self.sudokufunctions.grid[self.selected[1]][self.selected[0]] = int(event.unicode)
                             self.sudokufunctions.gridfixed[self.selected[1]][self.selected[0]] = 1
 
             keys = pygame.key.get_pressed()
@@ -210,6 +210,6 @@ class sudokuInterface():
 
 if __name__ == "__main__":
     # this is true when the program starts running
-    sudoku = sudokuInterface()
+    sudoku = SudokuInterface()
     sudoku.resetgrid()
     # keeps the menu running
