@@ -1,6 +1,8 @@
 # Generates a filled Sudoku grid
 
 import random
+import time
+import copy
 
 class SudokuGenerator():
 
@@ -31,11 +33,17 @@ class SudokuGenerator():
         self.currentcolumn = 0
         self.currentrow = 0
         self.gridsize = 9
+
+        self.returning = False
         self.solving = True
         self.solution = True
+        self.solutioncount = 0
 
+
+        self.removingValues = False
         self.removeCount = 0
-        self.removeTarget = 50
+        self.removeTarget = 80
+        self.starttime = time.time()
 
 
     def Generate(self):
@@ -43,7 +51,7 @@ class SudokuGenerator():
         self.grid[0] = self.numbers
         # shuffles the numbers 1-9 randomly and sets it as the first row
 
-
+        self.generating = True
         self.numbers = sorted(self.numbers, key=lambda k: random.random())
         self.currentrow = 1
         self.currentcolumn = 0
@@ -69,8 +77,13 @@ class SudokuGenerator():
 
     def Solve(self):
 
+        self.returning = False
+
         while self.solving:
+
             if self.gridfixed[self.currentrow][self.currentcolumn] == 0:
+
+                self.returning = False
                 if self.grid[self.currentrow][self.currentcolumn] != self.numbers[-1]:
                     # if there are still numbers to go through for that box
                     if self.grid[self.currentrow][self.currentcolumn] == 0:
@@ -87,6 +100,16 @@ class SudokuGenerator():
 
                 else:
                     self.ToPreviousBox()
+            
+            else:
+                if self.returning:
+                    # if returning and current box is fixed, keep returning
+                    self.ToPreviousBox()
+
+                else:
+                    # if the current box is fixed and not returning, skip this box
+                    self.ToNextBox()
+
         
         if self.solution:
             return True
@@ -139,15 +162,19 @@ class SudokuGenerator():
             if self.currentrow == self.gridsize - 1:
             # if in the bottom right of the box, then the sudoku is solved
 
-                for i in range(9):
-                    print(self.grid[i])
-                self.solving = False
+                self.solutioncount += 1
+                if self.solutioncount == 1 and self.removingValues == True:
+                    self.ToPreviousBox()
+                else:
+                    self.solving = False
+
 
             else:
                 self.currentrow += 1
                 self.currentcolumn = 0
-                self.numbers = sorted(self.numbers, key=lambda k: random.random())
-                # if in the rightmost column, go down a row
+                if self.generating:
+                    self.numbers = sorted(self.numbers, key=lambda k: random.random())
+                    # if in the rightmost column, go down a row
         else:
             self.currentcolumn += 1
 
@@ -160,7 +187,6 @@ class SudokuGenerator():
             if self.currentrow == 0:
                 # if trying to go to previous box from top left of box, there is no solution
                 self.solving = False
-                self.solution = False
             else:
                 self.currentrow -= 1
                 self.currentcolumn = 8
@@ -168,29 +194,67 @@ class SudokuGenerator():
 
         else:
             self.currentcolumn -= 1
+        self.returning = True
 
     def RemoveNumbers(self):
-        print(" ")
-        for i in range(9):
-            print(self.grid[i])
-        print(" ")
-        while self.removeCount < self.removeTarget:
-            toRemoveY = random.randint(0,8)
-            toRemoveX = random.randint(0,8)
-            temp = self.grid[toRemoveY][toRemoveX]
-            self.grid[toRemoveY][toRemoveX] = 0
-            self.gridfixed[toRemoveY][toRemoveX] = 0
-            # solve and if it can solve, go onto next
-            if self.Solve():
-                self.removeCount += 1
-                print(self.removeCount)
-                pass
-            else:
-                self.grid[toRemoveY][toRemoveX] = temp
-                self.gridfixed[toRemoveY][toRemoveX] = 1
 
-        for i in range(9):
-            print(self.grid[i])
+        self.removingValues = True
+        self.generating = False
+
+        self.fullgrid = copy.deepcopy(self.grid)
+        self.fullgridfixed = copy.deepcopy(self.gridfixed)
+
+        availableLocations = []
+        for x in range(9):
+            for y in range(9):
+                availableLocations.append([y,x])
+                # an array of all possible values in the grid which contain numbers
+        
+        attempts = 0
+        # restrict number of attempts to remove values which fail so that program doesnt run forever
+
+        while attempts<10 and len(availableLocations) > 17:
+            ''' need to change it so that availableLocations is shuffled at start of each turn,
+            it then doesnt choose a random location, it goes through each item until the end then shuffles again
+            if a value was removed. so stops running when it has gone through all available locations without removing one'''
+            removeLocation = random.choice(availableLocations)
+
+            self.grid = copy.deepcopy(self.fullgrid)
+            self.gridfixed = copy.deepcopy(self.fullgridfixed)
+            # copy fullgrid onto grid because grid may still contain a solution from solving in the last iteration
+            # fullgrid will have the values removed that support 1 solution
+
+            self.grid[removeLocation[0]][removeLocation[1]] = 0
+            self.gridfixed[removeLocation[0]][removeLocation[1]] = 0
+
+            self.solving = True
+            self.solutioncount = 0
+            self.currentrow = 0
+            self.currentcolumn = 0
+            self.numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+            if self.Solve():
+                
+                if self.solutioncount == 1:
+                    self.removeCount += 1
+
+                    self.fullgrid[removeLocation[0]][removeLocation[1]] = 0
+                    self.fullgridfixed[removeLocation[0]][removeLocation[1]] = 0
+                    attempts = 0
+                    availableLocations.remove(removeLocation)
+                    # removing this value gives a unique solution so it is removed from the full grid
+                else:
+                    attempts += 1
+            else:
+                attempts += 1
+
+
+        for i in range(self.gridsize):
+            print(self.fullgrid[i])
+        print("\n")
+        print(self.removeCount)
+        print(time.time() - self.starttime)
+
 
 if __name__ == "__main__":
     # this is true when the program starts running
