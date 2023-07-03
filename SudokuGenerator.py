@@ -220,45 +220,58 @@ class SudokuGenerator():
         attempts = 0
         # restrict number of attempts to remove values which fail so that program doesnt run forever
 
-        while attempts<10 and len(availableLocations) > 17:
-            ''' need to change it so that availableLocations is shuffled at start of each turn,
-            it then doesnt choose a random location, it goes through each item until the end then shuffles again
-            if a value was removed. so stops running when it has gone through all available locations without removing one'''
-            removeLocation = random.choice(availableLocations)
+        removed = True
 
-            self.grid = copy.deepcopy(self.fullgrid)
-            self.gridfixed = copy.deepcopy(self.fullgridfixed)
-            # copy fullgrid onto grid because grid may still contain a solution from solving in the last iteration
-            # fullgrid will have the values removed that support 1 solution
+        while self.removingValues and removed:
 
-            self.grid[removeLocation[0]][removeLocation[1]] = 0
-            self.gridfixed[removeLocation[0]][removeLocation[1]] = 0
-            # remove the value from the grid
+            availableLocations = sorted(availableLocations, key=lambda k: random.random())
+            # list of available locations is shuffled at start of each iteration
+            removeIndex = 0
+            removed = False
 
-            self.solving = True
-            self.solutioncount = 0
-            self.currentrow = 0
-            self.currentcolumn = 0
-            self.numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-            # resetting variables needed for the solving function
-
-            if self.Solve():
+            while removeIndex < len(availableLocations):
+                # goes through each item of array then shuffles again if a value was removed
+                # so stops running when it has gone through all available locations without removing one
                 
-                if self.solutioncount == 1:
-                    self.removeCount += 1
-                    # counts how many values have been removed
+                removeLocation = availableLocations[removeIndex]
 
-                    self.fullgrid[removeLocation[0]][removeLocation[1]] = 0
-                    self.fullgridfixed[removeLocation[0]][removeLocation[1]] = 0
-                    # value can be removed from main grid as it creates a unique solution
-                    attempts = 0
-                    availableLocations.remove(removeLocation)
-                    # removing this value gives a unique solution so it is removed from the full grid
+                self.grid = copy.deepcopy(self.fullgrid)
+                self.gridfixed = copy.deepcopy(self.fullgridfixed)
+                # copy fullgrid onto grid because grid may still contain a solution from solving in the last iteration
+                # fullgrid will have the values removed that support 1 solution
+
+                self.grid[removeLocation[0]][removeLocation[1]] = 0
+                self.gridfixed[removeLocation[0]][removeLocation[1]] = 0
+                # remove the value from the grid
+
+                self.solving = True
+                self.solutioncount = 0
+                self.currentrow = 0
+                self.currentcolumn = 0
+                self.numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+                # resetting variables needed for the solving function
+
+                if self.Solve():
+                    
+                    if self.solutioncount == 1:
+                        self.removeCount += 1
+                        # counts how many values have been removed
+
+                        self.fullgrid[removeLocation[0]][removeLocation[1]] = 0
+                        self.fullgridfixed[removeLocation[0]][removeLocation[1]] = 0
+                        # value can be removed from main grid as it creates a unique solution
+                        attempts = 0
+                        availableLocations.remove(removeLocation)
+                        # removing this value gives a unique solution so it is removed from the full grid
+
+                        removed = True
+
+                    else:
+                        attempts += 1
                 else:
                     attempts += 1
-            else:
-                attempts += 1
-
+               
+                removeIndex += 1
 
         for i in range(self.gridsize):
             print(self.fullgrid[i])
