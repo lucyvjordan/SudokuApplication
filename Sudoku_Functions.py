@@ -4,7 +4,7 @@ import random
 import time
 import copy
 
-class SudokuGenerator():
+class SudokuFunctions():
 
     def __init__(self):
 
@@ -172,6 +172,9 @@ class SudokuGenerator():
                 if self.solutioncount == 1 and self.removingValues == True:
                     self.ToPreviousBox()
                     # if we are in the process of removing values from the grid, and only one solution has been found, then backtrack
+                    self.completegrid = copy.deepcopy(self.grid)
+                    self.completegridfixed = copy.deepcopy(self.gridfixed)
+                    # this new complete grid array will store the solution which will be used to check the players input
                 else:
                     self.solving = False
                     # if we are not in the process of removing values, then the sudoku has been solved and the loop can stop
@@ -257,6 +260,8 @@ class SudokuGenerator():
                 # resetting variables needed for the solving function
 
                 if self.Solve():
+
+
                     
                     if self.solutioncount == 1:
                         self.removeCount += 1
@@ -273,10 +278,11 @@ class SudokuGenerator():
 
                     else:
                         attempts += 1
+                        removeIndex += 1
+                        # removeIndex only incremented if value not removed so that it doesnt skip over any element in the array
                 else:
                     attempts += 1
-               
-                removeIndex += 1
+                    removeIndex += 1
 
         for i in range(self.gridsize):
             print(self.fullgrid[i])
@@ -544,9 +550,3 @@ class SudokuGenerator():
         # the current values are reset
 
         return True
-        
-if __name__ == "__main__":
-    # this is true when the program starts running
-    sudoku = SudokuGenerator()
-    sudoku.Generate()
-    # keeps the sudoku generator running
