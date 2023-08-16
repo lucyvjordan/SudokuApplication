@@ -30,7 +30,7 @@ class Sudoku():
         running = True
 
         while running:
-            pygame.display.set_caption("Sudoku Generator")
+            pygame.display.set_caption("Sudoku")
 
             try:
                 win.blit(pygame.image.load(os.path.join(sys.path[0],"background.png")), (0,0))
@@ -92,7 +92,7 @@ class Sudoku():
             keys = pygame.key.get_pressed()
 
             if keys[pygame.K_g]:
-                self.resetgrid()
+                self.resetgrid(self.sudokufunctions.difficulty)
 
             if keys[pygame.K_BACKSPACE] and self.solved == False:
                 if self.selected != [-1,-1]:
@@ -109,7 +109,7 @@ class Sudoku():
                 else:
                     self.solutiontext = self.textfont.render("Incorrect solution.", False, self.black)
             
-            self.screentext = self.textfont.render("Press G to generate a new grid.", False, self.black)
+            self.screentext = self.textfont.render("Check solution: S", False, self.black)
 
             if self.solutiontext == "":
                 self.drawgrid()
@@ -123,7 +123,7 @@ class Sudoku():
 
         pygame.draw.rect(win, self.black, (0, 10, 500, 45), 0)
 
-        title_text = self.font.render("- - - - - - - - Sudoku Generator - - - - - - - -", False, self.white)
+        title_text = self.font.render("- - - - - - - - Sudoku - - - - - - - -", False, self.white)
         title_text_rect = title_text.get_rect(center=(pygame.display.get_surface().get_width()/2, 35))
         win.blit(title_text, title_text_rect)
 
@@ -154,21 +154,24 @@ class Sudoku():
         # draws a green box around the selected box
 
 
-        pygame.draw.rect(win, self.white, (0, 59, 500, 30), 0)
+        optionsLeftHalf = pygame.draw.rect(win, self.white, (0, 59, 250, 30), 0)
+        optionsRightHalf = pygame.draw.rect(win, self.blue, (250, 59, 250, 30), 0)
+        
         if self.solutiontext == "":
-            screentext_rect = self.screentext.get_rect(center=(pygame.display.get_surface().get_width()/2, 75))
+            screentext_rect = self.screentext.get_rect(center=(optionsLeftHalf.center))
             win.blit(self.screentext, screentext_rect)
         else:
-            solutiontext_rect = self.solutiontext.get_rect(center=(pygame.display.get_surface().get_width()/2, 75))
+            solutiontext_rect = self.solutiontext.get_rect(center=(optionsLeftHalf.center))
             win.blit(self.solutiontext, solutiontext_rect)
 
 
     def resetgrid(self, difficulty):
         # resets the grid to empty
         self.sudokufunctions = Sudoku_Functions.SudokuFunctions()
+        self.sudokufunctions.difficulty = difficulty
         self.solutiontext = ""
         self.solved = False
-        self.sudokufunctions.Generate(difficulty)
+        self.sudokufunctions.Generate()
         self.inputting()
         #sudoku.inputting()
 

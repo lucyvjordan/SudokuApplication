@@ -10,7 +10,7 @@ def start_menu():
     
     backgroundcolour = (50, 151, 194)
     font = pygame.font.SysFont('Consolas', 25, bold=False)
-    textfont = pygame.font.SysFont('Consolas', 16, bold=True)        
+    textfont = pygame.font.SysFont('Consolas', 20, bold=True)        
     boldfont = pygame.font.SysFont('Consolas', 25, bold=True)
     black = (0, 0, 0)
     blue = (35, 100, 255)  
@@ -56,11 +56,21 @@ def start_menu():
             innerRect.center = borderRect.center
             pygame.draw.rect(win, backgroundcolour, innerRect)
 
-            difficulty_text = font.render(difficulty[i-1],False, white)
+            difficulty_text = textfont.render(difficulty[i-1],False, white)
             difficulty_text_rect = difficulty_text.get_rect(center=innerRect.center)
             win.blit(difficulty_text, difficulty_text_rect)
 
             if innerRect.collidepoint(x,y) and pressing:
                 return difficulty[i-1]
+
+        solverRect = pygame.draw.rect(win, white, (5, 450, 490, 75))
+        innersolverRect = pygame.draw.rect(win, black, (7.5, 452.5, 485, 70))
+    
+        solver_text = textfont.render("OR... solve a sudoku you're stuck on!", False, white)
+        solver_text_rect = solver_text.get_rect(center=innersolverRect.center)
+        win.blit(solver_text, solver_text_rect)
+
+        if innersolverRect.collidepoint(x,y) and pressing:
+            print("user trying to solve sudoku - still need to code")
 
         pygame.display.update()
