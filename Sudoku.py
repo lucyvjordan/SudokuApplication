@@ -1,5 +1,6 @@
 import pygame
 import Sudoku_Functions
+import Start_Menu
 import time
 import sys,os
 
@@ -118,36 +119,6 @@ class Sudoku():
             pygame.display.update()
 
 
-    def start_menu(self):
-
-        running = True
-        while running:
-            pygame.display.set_caption("Sudoku Generator")
-
-            try:
-                win.blit(pygame.image.load(os.path.join(sys.path[0],"background.png")), (0,0))
-            except:
-                win.fill(self.backgroundcolour)
-            # so that an error does not occur if the file can't be found or is in the wrong folder
-
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-
-            keys = pygame.key.get_pressed()
-            
-            if keys[pygame.K_g]:
-                self.resetgrid()
-
-            self.screentext = self.textfont.render("Press G to generate a grid.", False, self.black)
-            # if the program has solved the sudoku
-
-            self.drawgrid()
-
-            pygame.display.update()
-    
-
     def drawgrid(self):
 
         pygame.draw.rect(win, self.black, (0, 10, 500, 45), 0)
@@ -183,7 +154,6 @@ class Sudoku():
         # draws a green box around the selected box
 
 
-
         pygame.draw.rect(win, self.white, (0, 59, 500, 30), 0)
         if self.solutiontext == "":
             screentext_rect = self.screentext.get_rect(center=(pygame.display.get_surface().get_width()/2, 75))
@@ -193,12 +163,12 @@ class Sudoku():
             win.blit(self.solutiontext, solutiontext_rect)
 
 
-    def resetgrid(self):
+    def resetgrid(self, difficulty):
         # resets the grid to empty
         self.sudokufunctions = Sudoku_Functions.SudokuFunctions()
         self.solutiontext = ""
         self.solved = False
-        self.sudokufunctions.Generate()
+        self.sudokufunctions.Generate(difficulty)
         self.inputting()
         #sudoku.inputting()
 
@@ -207,5 +177,6 @@ if __name__ == "__main__":
     # this is true when the program starts running
     sudoku = Sudoku()
     sudoku.sudokufunctions = Sudoku_Functions.SudokuFunctions()
-    sudoku.start_menu()
+    difficulty = Start_Menu.start_menu()
+    sudoku.resetgrid(difficulty)
     # keeps the menu running

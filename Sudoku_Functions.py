@@ -44,11 +44,11 @@ class SudokuFunctions():
 
         self.removingValues = False
         self.removeCount = 0
-        self.removeTarget = 80
+        self.removeTarget = 0
         self.starttime = time.time()
 
 
-    def Generate(self):
+    def Generate(self, difficulty):
         self.generating = True
         self.numbers = sorted(self.numbers, key=lambda k: random.random())
         self.grid[0] = self.numbers
@@ -76,7 +76,7 @@ class SudokuFunctions():
             [1, 1, 1, 1, 1, 1, 1, 1, 1]]
         # all values in the grid start as fixed points
         
-        self.RemoveNumbers()
+        self.RemoveNumbers(difficulty)
 
 
     def Solve(self):
@@ -210,7 +210,11 @@ class SudokuFunctions():
             # if not in leftmost column, decrement columns
         self.backtracking = True
 
-    def RemoveNumbers(self):
+    def RemoveNumbers(self, difficulty):
+
+        difficulties = {"EASY": 30, "MEDIUM": 45, "HARD": 60}
+
+        self.removeTarget = difficulties[difficulty]
 
         self.removingValues = True
         self.generating = False
@@ -237,7 +241,7 @@ class SudokuFunctions():
             removeIndex = 0
             removed = False
 
-            while removeIndex < len(availableLocations) and self.removeCount < 80:
+            while removeIndex < len(availableLocations) and self.removeCount < self.removeTarget:
                 # goes through each item of array then shuffles again if a value was removed
                 # so stops running when it has gone through all available locations without removing one
                 
