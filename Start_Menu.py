@@ -26,7 +26,7 @@ def start_menu():
         pygame.display.set_caption("Sudoku Start Menu")
 
         try:
-            win.blit(pygame.image.load(os.path.join(sys.path[0],"background.png")), (0,0))
+            win.blit(pygame.image.load(os.path.join(sys.path[0],"sprites/background.png")), (0,0))
         except:
             win.fill(backgroundcolour)
         # so that an error does not occur if the file can't be found or is in the wrong folder
