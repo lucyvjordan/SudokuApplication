@@ -17,6 +17,8 @@ class Sudoku():
         self.black = (0, 0, 0)
         self.blue = (35, 100, 255)  
         self.white = (255, 255, 255)
+        self.green = (0, 255, 0)
+        self.red = (255, 0, 0)
         self.backgroundcolour = (50, 151, 194)
 
         self.origin = [25,125]
@@ -24,7 +26,11 @@ class Sudoku():
         # defines this so that the grisd can be moved without manually changing the location of all drawn elements
 
         self.selected = [-1,-1]
-        self.playing = True
+
+        self.playing = False
+        # set as False while coding end screen
+        self.incorrect = False
+        self.correct = False
 
         undo_sprite = pygame.image.load(os.path.join(sys.path[0],"sprites/undo_sprite.png"))
         restart_sprite = pygame.image.load(os.path.join(sys.path[0],"sprites/restart_sprite.png"))
@@ -54,138 +60,148 @@ class Sudoku():
                     pygame.quit()
                     sys.exit()
 
-                if event.type == pygame.MOUSEBUTTONDOWN and self.solved == False:
+                if self.playing:
+                    # events which change grid only registered if not solved yet
 
-                        mousex, mousey = pygame.mouse.get_pos()
-                        if self.origin[0] < mousex < self.origin[0] + (9*50) and self.origin[1] < mousey < self.origin[1] + (9*50):
-                            # if the mouse has been clicked within the grid
-                            xposition = int((mousex - self.origin[0]) / 50)
-                            yposition = int((mousey - self.origin[1]) / 50)
-                            # finds which box is being clicked
+                    if event.type == pygame.MOUSEBUTTONDOWN and self.solved == False:
 
-                            if self.sudokufunctions.gridfixed[yposition][xposition] == 1:
-                                # player will only be able to select boxes which do not contain fixed points
-                                self.selected = [-1, -1]
-                            else:
-                                self.selected = [xposition, yposition]
+                            # CLICKING ON GRID
+                            mousex, mousey = pygame.mouse.get_pos()
+                            if self.origin[0] < mousex < self.origin[0] + (9*50) and self.origin[1] < mousey < self.origin[1] + (9*50):
+                                # if the mouse has been clicked within the grid
+                                xposition = int((mousex - self.origin[0]) / 50)
+                                yposition = int((mousey - self.origin[1]) / 50)
+                                # finds which box is being clicked
 
-                        else:
-                            self.selected = [-1,-1]
-                            # unselects whichever box is being entered in
-
-                        if self.icons_X[0] < mousex < self.icons_X[-1] + 40:
-                            if 60 < mousey < 100:
-                                for i in range(len(self.icons_X)):
-                                    if self.icons_X[i] < mousex < self.icons_X[i] + 40:
-                                        
-                                        if i == 0:
-                                            #undo
-                                            if len(self.previousmoves) != 0:
-                                                self.sudokufunctions.grid[self.previousmoves[-1][0]][self.previousmoves[-1][1]] = self.previousmoves[-1][2]
-                                                # set the value at the index directed in the stack to the number also contained in the stack
-
-                                                if self.previousmoves[-1][2] == 0:
-                                                    # if removing a number from the grid, set its fixed value to 0
-                                                    self.sudokufunctions.gridfixed[self.previousmoves[-1][0]][self.previousmoves[-1][1]] == 0
-                                                else:
-                                                    # if adding a number to the grid, set its fixed value to 2
-                                                    self.sudokufunctions.gridfixed[self.previousmoves[-1][0]][self.previousmoves[-1][1]] == 2
-
-                                                self.previousmoves.pop()
-                                                # remove the move from the stack
-
-                                        elif i == 1:
-                                            # restart
-                                            for y in range(9):
-                                                for x in range(9):
-                                                    if self.sudokufunctions.gridfixed[y][x] == 2:
-                                                        # then the number has been entered by the user
-                                                        self.sudokufunctions.gridfixed[y][x] = 0
-                                                        self.sudokufunctions.grid[y][x] = 0
-                                            self.previousmoves = []
-
-                                        elif i == 2:
-                                            # check - still to code
-                                            if self.sudokufunctions.grid == self.sudokufunctions.completegrid:
-                                                self.solved = True
-                                                self.selected = [-1, -1]
-                                                print("correct")
-                                            else:
-                                                print("incorrect")
-
-                                        else:
-                                            # quit
-                                            difficulty = Start_Menu.start_menu()
-                                            sudoku.resetgrid(difficulty)
-                                            
-                if event.type == pygame.KEYDOWN and self.solved == False:             
-                    if event.unicode.isdigit() and self.selected != [-1,-1]:
-                        # if key pressed is a number and a box has been selected
-                        self.solutiontext = ""
-                        if int(event.unicode) != 0:
-                            # if the number pressed is not 0
-                            print(self.previousmoves)
-                            if self.sudokufunctions.grid[self.selected[1]][self.selected[0]] != int(event.unicode):
-                                # only changes value if it is different to value already in the box
-                                self.previousmoves.append([self.selected[1], self.selected[0], self.sudokufunctions.grid[self.selected[1]][self.selected[0]]])
-                                self.sudokufunctions.grid[self.selected[1]][self.selected[0]] = int(event.unicode)
-                                self.sudokufunctions.gridfixed[self.selected[1]][self.selected[0]] = 2
-                            # the grid fixed is set to 2 so it is still recognised as a fixed point if in future I want the player to be able to solve the rest of sudokus they cant finish, but will not be rendered blue like fixed point '1's are
-                        
-                        movingtonext = True
-                        while movingtonext:
-                            if self.selected != [8,8]:
-                                # this if statement will move the player automatically to the next box when they enter a number
-                                if self.selected[0] == 8:
-                                    self.selected = [0, self.selected[1] + 1]
+                                if self.sudokufunctions.gridfixed[yposition][xposition] == 1:
+                                    # player will only be able to select boxes which do not contain fixed points
+                                    self.selected = [-1, -1]
                                 else:
-                                    self.selected = [self.selected[0] + 1, self.selected[1]]
+                                    self.selected = [xposition, yposition]
+
                             else:
-                                self.selected = [0,0]
+                                self.selected = [-1,-1]
+                                # unselects whichever box is being entered in
 
-                            if self.sudokufunctions.gridfixed[self.selected[1]][self.selected[0]] == 1:
-                                # if the next box is a fixed digit, then keeping going onto the next box
-                                pass
-                            else:
-                                movingtonext = False
+                            # ICONS
+                            if self.icons_X[0] < mousex < self.icons_X[-1] + 40:
+                                if 60 < mousey < 100:
+                                    for i in range(len(self.icons_X)):
+                                        if self.icons_X[i] < mousex < self.icons_X[i] + 40:
+                                            
+                                            if i == 0:
+                                                #undo
+                                                if len(self.previousmoves) != 0:
+                                                    self.sudokufunctions.grid[self.previousmoves[-1][0]][self.previousmoves[-1][1]] = self.previousmoves[-1][2]
+                                                    # set the value at the index directed in the stack to the number also contained in the stack
 
-            keys = pygame.key.get_pressed()
+                                                    if self.previousmoves[-1][2] == 0:
+                                                        # if removing a number from the grid, set its fixed value to 0
+                                                        self.sudokufunctions.gridfixed[self.previousmoves[-1][0]][self.previousmoves[-1][1]] == 0
+                                                    else:
+                                                        # if adding a number to the grid, set its fixed value to 2
+                                                        self.sudokufunctions.gridfixed[self.previousmoves[-1][0]][self.previousmoves[-1][1]] == 2
 
-            if keys[pygame.K_g]:
-                self.resetgrid(self.sudokufunctions.difficulty)
+                                                    self.previousmoves.pop()
+                                                    # remove the move from the stack
 
-            # BACKSPACE
-            if keys[pygame.K_BACKSPACE] and self.solved == False:
-                if self.selected != [-1,-1] and self.sudokufunctions.grid[self.selected[1]][self.selected[0]] != 0:
+                                            elif i == 1:
+                                                # restart
+                                                for y in range(9):
+                                                    for x in range(9):
+                                                        if self.sudokufunctions.gridfixed[y][x] == 2:
+                                                            # then the number has been entered by the user
+                                                            self.sudokufunctions.gridfixed[y][x] = 0
+                                                            self.sudokufunctions.grid[y][x] = 0
+                                                self.previousmoves = []
 
-                    self.previousmoves.append([self.selected[1], self.selected[0], self.sudokufunctions.grid[self.selected[1]][self.selected[0]]])
-                    # add the removal to the previous moves
+                                            elif i == 2:
+                                                # check - still to code
+                                                if self.sudokufunctions.grid == self.sudokufunctions.completegrid:
+                                                    # correct
+                                                    self.playing = False
+                                                    self.correct = True
+                                                    self.selected = [-1, -1]
+                                                else:
+                                                    # incorrect
+                                                    self.incorrect = True
 
-                    self.sudokufunctions.grid[self.selected[1]][self.selected[0]] = 0
-                    self.sudokufunctions.gridfixed[self.selected[1]][self.selected[0]] = 0
-                    # removes the value from the selected box
+                                            else:
+                                                # quit
+                                                difficulty = Start_Menu.start_menu()
+                                                sudoku.resetgrid(difficulty)
+                                                
+                    # ENTERING NUMBERS
+                    if event.type == pygame.KEYDOWN and self.solved == False:             
+                        if event.unicode.isdigit() and self.selected != [-1,-1]:
+                            # if key pressed is a number and a box has been selected
+                            self.solutiontext = ""
+                            if int(event.unicode) != 0:
+                                # if the number pressed is not 0
+                                if self.sudokufunctions.grid[self.selected[1]][self.selected[0]] != int(event.unicode):
+                                    # only changes value if it is different to value already in the box
+                                    self.previousmoves.append([self.selected[1], self.selected[0], self.sudokufunctions.grid[self.selected[1]][self.selected[0]]])
+                                    self.sudokufunctions.grid[self.selected[1]][self.selected[0]] = int(event.unicode)
+                                    self.sudokufunctions.gridfixed[self.selected[1]][self.selected[0]] = 2
+                                # the grid fixed is set to 2 so it is still recognised as a fixed point if in future I want the player to be able to solve the rest of sudokus they cant finish, but will not be rendered blue like fixed point '1's are
+                            
+                            movingtonext = True
+                            while movingtonext:
+                                if self.selected != [8,8]:
+                                    # this if statement will move the player automatically to the next box when they enter a number
+                                    if self.selected[0] == 8:
+                                        self.selected = [0, self.selected[1] + 1]
+                                    else:
+                                        self.selected = [self.selected[0] + 1, self.selected[1]]
+                                else:
+                                    self.selected = [0,0]
 
+                                if self.sudokufunctions.gridfixed[self.selected[1]][self.selected[0]] == 1:
+                                    # if the next box is a fixed digit, then keeping going onto the next box
+                                    pass
+                                else:
+                                    movingtonext = False
+
+                keys = pygame.key.get_pressed()
+
+                # BACKSPACE
+                if keys[pygame.K_BACKSPACE] and self.solved == False:
+                    if self.selected != [-1,-1] and self.sudokufunctions.grid[self.selected[1]][self.selected[0]] != 0:
+
+                        self.previousmoves.append([self.selected[1], self.selected[0], self.sudokufunctions.grid[self.selected[1]][self.selected[0]]])
+                        # add the removal to the previous moves
+
+                        self.sudokufunctions.grid[self.selected[1]][self.selected[0]] = 0
+                        self.sudokufunctions.gridfixed[self.selected[1]][self.selected[0]] = 0
+                        # removes the value from the selected box
 
             self.drawgrid()
+
+            if not self.playing:
+                self.drawendscreen()
 
             pygame.display.update()
 
 
     def drawgrid(self):
 
+        # TITLE BOX
         pygame.draw.rect(win, self.black, (0, 10, 500, 45), 0)
-
         title_text = self.font.render("- - - - - - - - Sudoku - - - - - - - -", False, self.white)
         title_text_rect = title_text.get_rect(center=(pygame.display.get_surface().get_width()/2, 35))
         win.blit(title_text, title_text_rect)
 
-        # BOXES AND NUMBERS
+        # GRID AND NUMBERS
         for y in range(len(self.sudokufunctions.grid)):
             for x in range(len(self.sudokufunctions.grid[y])):
                 # goes through every element of the grid
                 box = pygame.draw.rect(win, self.black, (self.origin[0]+(x*50) , self.origin[1]+(y*50), 50, 50), 0)
-                win.fill(self.white, box.inflate(-1, -1))
-
+                if self.correct:
+                    win.fill(self.green, box.inflate(-1, -1))
+                elif self.incorrect:
+                    win.fill(self.red, box.inflate(-1, -1))
+                else:
+                    win.fill(self.white, box.inflate(-1, -1))
                 # draws each elements box
                 if self.sudokufunctions.grid[y][x] != 0:
                     if self.sudokufunctions.gridfixed[y][x] == 1:
@@ -228,13 +244,17 @@ class Sudoku():
             # display the time in hours:minutes:seconds format
 
         screentext_rect = self.screentext.get_rect(center=(timeSection.center))        
-
         win.blit(self.screentext, screentext_rect)
 
         # GAME ICONS
         for i in range(len(self.icons)):
             win.blit(self.icons[i], (self.icons_X[i], 60))
 
+
+    def drawendscreen(self):
+        # TITLE BOX
+        endscreenborder = pygame.draw.rect(win, self.black, (100, 200, 300, 250), 0)
+        endscreenbox = win.fill(self.blue, endscreenborder.inflate(-10, -10))
 
     def resetgrid(self, difficulty):
         # resets the grid to empty
