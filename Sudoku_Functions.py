@@ -50,7 +50,7 @@ class SudokuFunctions():
         self.difficulty = ""
 
 
-    def Generate(self):
+    def generate_sudoku(self):
         self.generating = True
         self.numbers = sorted(self.numbers, key=lambda k: random.random())
         self.grid[0] = self.numbers
@@ -65,7 +65,7 @@ class SudokuFunctions():
         to see which number fits in that box according to sudoku rules, the order in which it goes through the 
         numbers is random which decreases the chance of getting repeated grids '''
 
-        self.Solve()
+        self.solve_sudoku()
 
         self.gridfixed = [[1, 1, 1, 1, 1, 1, 1, 1, 1],
             [1, 1, 1, 1, 1, 1, 1, 1, 1],
@@ -78,15 +78,15 @@ class SudokuFunctions():
             [1, 1, 1, 1, 1, 1, 1, 1, 1]]
         # all values in the grid start as fixed points
         
-        self.RemoveNumbers()
+        self.remove_numbers()
 
 
-    def Solve(self):
+    def solve_sudoku(self):
 
         self.backtracking = False
         # resets from previous iterations
         if self.removingValues:
-            self.dryrun()
+            self.dry_run()
 
         while self.solving:
 
@@ -103,29 +103,29 @@ class SudokuFunctions():
                         # otherwise, it finds the number in the numbers array that is after the current number the box contains
                     self.currentnumber = self.grid[self.currentrow][self.currentcolumn]
                     
-                    if(self.CheckRow() and self.CheckColumn() and self.CheckBox()):
+                    if(self.check_row() and self.check_column() and self.check_box()):
                     # checks if the number is valid by sudoku rules
-                        self.ToNextBox()
+                        self.to_nextbox()
 
                 else:
-                    self.ToPreviousBox()
+                    self.to_previousbox()
                     # if there are no values which work for this box, then needs to backtrack
             
             else:
                 if self.backtracking:
                     # if backtracking and current box is fixed, keep backtracking
-                    self.ToPreviousBox()
+                    self.to_previousbox()
 
                 else:
                     # if the current box is fixed and not backtracking, skip this box
-                    self.ToNextBox()
+                    self.to_nextbox()
         
         if self.solution:
             return True
         return False
 
 
-    def CheckRow(self):
+    def check_row(self):
         # checks current row for another instance of the current number
 
         if self.grid[self.currentrow].count(self.currentnumber) > 1:
@@ -133,7 +133,7 @@ class SudokuFunctions():
         return True
 
 
-    def CheckColumn(self):
+    def check_column(self):
         # checks current column for another instance of the current number
 
         count = 0
@@ -145,7 +145,7 @@ class SudokuFunctions():
         return True
 
 
-    def CheckBox(self):
+    def check_box(self):
         # checks current box for another instance of the current number
         topleftbox = [0,0]
 
@@ -165,14 +165,14 @@ class SudokuFunctions():
         return True
 
 
-    def ToNextBox(self):
+    def to_nextbox(self):
         if self.currentcolumn == self.gridsize - 1:
             if self.currentrow == self.gridsize - 1:
             # if in the bottom right of the box, then the sudoku is solved
 
                 self.solutioncount += 1
                 if self.solutioncount == 1 and self.removingValues == True:
-                    self.ToPreviousBox()
+                    self.to_previousbox()
                     # if we are in the process of removing values from the grid, and only one solution has been found, then backtrack
                     self.completegrid = copy.deepcopy(self.grid)
                     self.completegridfixed = copy.deepcopy(self.gridfixed)
@@ -193,7 +193,7 @@ class SudokuFunctions():
             # if not in the final column, then increment columns
 
 
-    def ToPreviousBox(self):
+    def to_previousbox(self):
         if self.gridfixed[self.currentrow][self.currentcolumn] == 0:
             self.grid[self.currentrow][self.currentcolumn] = 0
             # if not a fixed point, reset box to 0
@@ -212,7 +212,7 @@ class SudokuFunctions():
             # if not in leftmost column, decrement columns
         self.backtracking = True
 
-    def RemoveNumbers(self):
+    def remove_numbers(self):
 
         difficulties = {"EASY": 30, "MEDIUM": 45, "HARD": 60}
 
@@ -265,7 +265,7 @@ class SudokuFunctions():
                 self.numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]
                 # resetting variables needed for the solving function
 
-                if self.Solve():
+                if self.solve_sudoku():
 
 
                     
@@ -304,7 +304,7 @@ class SudokuFunctions():
 
 
 
-    def checkHiddenPointRow(self, index):
+    def check_hiddenpoint_row(self, index):
         # checks whether there are any hidden points in the current row
         self.uniquenumbers = []
         # will store a list of all the numbers that only occur once
@@ -330,7 +330,7 @@ class SudokuFunctions():
                         self.gridfixed[index][a] = 3
                         # the element becomes a hidden fixed point
 
-                        self.RemoveHiddenPoint(x, index, a)
+                        self.remove_hiddenpoint(x, index, a)
                         pointfound = True
 
         if pointfound:
@@ -338,7 +338,7 @@ class SudokuFunctions():
             # means that hidden points will continue to be checked for
 
 
-    def checkHiddenPointColumn(self, index):
+    def check_hiddenpoint_column(self, index):
         # checks whether there are any hidden points in the current column
         self.uniquenumbers = []
         # will store a list of all the numbers that only occur once
@@ -366,7 +366,7 @@ class SudokuFunctions():
                         self.gridfixed[a][index] = 3
                         # the element becomes a hidden fixed point
 
-                        self.RemoveHiddenPoint(x, a, index)
+                        self.remove_hiddenpoint(x, a, index)
                         pointfound = True
 
         if pointfound:
@@ -374,7 +374,7 @@ class SudokuFunctions():
             # means that hidden points will continue to be checked for
 
 
-    def checkHiddenPointBox(self):
+    def check_hiddenpoint_box(self):
         # checks whether there are any hidden points in the current box        
        
         for y in range(3):
@@ -413,7 +413,7 @@ class SudokuFunctions():
                                     self.gridfixed[topleftbox[0] + i][topleftbox[1] + j] = 3
                                     # the element becomes a hidden fixed point
 
-                                    self.RemoveHiddenPoint(x, topleftbox[0] + i, topleftbox[1] + j)
+                                    self.remove_hiddenpoint(x, topleftbox[0] + i, topleftbox[1] + j)
 
                                     pointfound = True
 
@@ -422,7 +422,7 @@ class SudokuFunctions():
                     # means that hidden points will continue to be checked for
 
 
-    def RemoveHiddenPoint(self, toRemove, row, column):
+    def remove_hiddenpoint(self, toRemove, row, column):
         # a function which removes a hidden points value from the possible values of the elements in its row, box, and column
         for i in range(9):
             # goes through every line of row and column
@@ -442,7 +442,7 @@ class SudokuFunctions():
                     if len(self.grid[row][i]) == 1:
                         # if the element that has been removed from now has a length of 1, it becomes a new fixed point, and is passed recursively into this function to be removed from its neighbours
                         self.gridfixed[row][i] = 3
-                        self.RemoveHiddenPoint(self.grid[row][i][0], row, i)
+                        self.remove_hiddenpoint(self.grid[row][i][0], row, i)
                     
             if toRemove in self.grid[i][column]:
                 # iteration of the for loop refers to the row
@@ -460,7 +460,7 @@ class SudokuFunctions():
                     if len(self.grid[i][column]) == 1:
                         # if the element that has been removed from now has a length of 1, it becomes a new fixed point, and is passed recursively into this function to be removed from its neighbours
                         self.gridfixed[i][column] = 3
-                        self.RemoveHiddenPoint(self.grid[i][column][0], i, column)
+                        self.remove_hiddenpoint(self.grid[i][column][0], i, column)
 
         # will remove the value also from all the other elements in its box
         topleftbox = [0,0]
@@ -485,10 +485,10 @@ class SudokuFunctions():
                         if len(self.grid[topleftbox[1] + i][topleftbox[0]+j]) == 1:
                             # if the element that has been removed from now has a length of 1, it becomes a new fixed point, and is passed recursively into this function to be removed from its neighbours                  
                             self.gridfixed[topleftbox[1] + i][topleftbox[0] + j] = 3
-                            self.RemoveHiddenPoint(self.grid[topleftbox[1] + i][topleftbox[0] + j][0], topleftbox[1] + i, topleftbox[0]+j)
+                            self.remove_hiddenpoint(self.grid[topleftbox[1] + i][topleftbox[0] + j][0], topleftbox[1] + i, topleftbox[0]+j)
 
 
-    def dryrun(self):
+    def dry_run(self):
         for y in range(9):
             self.currentrow = y
             for x in range(9):
@@ -504,14 +504,14 @@ class SudokuFunctions():
                         self.currentnumber = n + 1
                         self.grid[y][x] = self.currentnumber
 
-                        if(self.CheckRow() and self.CheckColumn() and self.CheckBox()):
+                        if(self.check_row() and self.check_column() and self.check_box()):
                         # checks if the number is valid by sudoku rules
                             self.numbers.append(self.currentnumber)
                     
                     self.grid[y][x] = self.numbers
                     # that elements index in the array is set to all the possible numbers it can take
 
-        for p in range (len(self.grid)):
+        for p in range(len(self.grid)):
             for q in range(len(self.grid[p])):
                 if isinstance(self.grid[p][q], int):
                     self.grid[p][q] = [self.grid[p][q]]
@@ -521,7 +521,7 @@ class SudokuFunctions():
             for j in range(9):
                 if len(self.grid[i][j]) == 1 and self.gridfixed[i][j] == 0:
                     self.gridfixed[i][j] = 3
-                    self.RemoveHiddenPoint(self.grid[i][j][0], i, j)
+                    self.remove_hiddenpoint(self.grid[i][j][0], i, j)
         # first checks to see if there are any elements with only one possible value
         
         self.hiddenpointfound = True
@@ -530,9 +530,9 @@ class SudokuFunctions():
             self.hiddenpointfound = False
 
             for i in range(9):
-                self.checkHiddenPointRow(i)
-                self.checkHiddenPointColumn(i)
-                self.checkHiddenPointBox()
+                self.check_hiddenpoint_row(i)
+                self.check_hiddenpoint_column(i)
+                self.check_hiddenpoint_box()
                 # index not passed to this one, because doing so would mean only boxes 1, 5, and 9 are checked
                 # (index goes diagonally down and right - which works for row and column, but not for boxes)
 

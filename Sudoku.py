@@ -14,6 +14,7 @@ class Sudoku():
         self.font = pygame.font.SysFont('Consolas', 25, bold=False)
         self.textfont = pygame.font.SysFont('Consolas', 16, bold=True)        
         self.boldfont = pygame.font.SysFont('Consolas', 25, bold=True)
+        self.endfont = pygame.font.SysFont('Consolas', 18, bold=False)
         self.black = (0, 0, 0)
         self.blue = (35, 100, 255)  
         self.white = (255, 255, 255)
@@ -27,7 +28,7 @@ class Sudoku():
 
         self.selected = [-1,-1]
 
-        self.playing = False
+        self.playing = True
         # set as False while coding end screen
         self.incorrect = False
         self.correct = False
@@ -39,10 +40,12 @@ class Sudoku():
 
         self.icons = [undo_sprite, restart_sprite, check_sprite, quit_sprite]
         self.icons_X = [284, 332, 380, 428]
-
+        
+        self.currentTime = 0
         self.previousmoves = []
 
-    def inputting(self):
+
+    def main_func(self):
         running = True
         self.startTime = time.time()
 
@@ -64,8 +67,12 @@ class Sudoku():
                     # events which change grid only registered if not solved yet
 
                     if event.type == pygame.MOUSEBUTTONDOWN and self.solved == False:
-
+        
                             # CLICKING ON GRID
+
+                            self.incorrect = False
+                            # reset red grid to white grid if previously checked incorrect solution
+
                             mousex, mousey = pygame.mouse.get_pos()
                             if self.origin[0] < mousex < self.origin[0] + (9*50) and self.origin[1] < mousey < self.origin[1] + (9*50):
                                 # if the mouse has been clicked within the grid
@@ -116,7 +123,11 @@ class Sudoku():
                                                 self.previousmoves = []
 
                                             elif i == 2:
-                                                # check - still to code
+                                                # check
+                                                self.playing = False
+                                                self.correct = True
+                                                self.selected = [-1, -1]
+
                                                 if self.sudokufunctions.grid == self.sudokufunctions.completegrid:
                                                     # correct
                                                     self.playing = False
@@ -129,7 +140,7 @@ class Sudoku():
                                             else:
                                                 # quit
                                                 difficulty = Start_Menu.start_menu()
-                                                sudoku.resetgrid(difficulty)
+                                                sudoku.reset_grid(difficulty)
                                                 
                     # ENTERING NUMBERS
                     if event.type == pygame.KEYDOWN and self.solved == False:             
@@ -162,28 +173,42 @@ class Sudoku():
                                 else:
                                     movingtonext = False
 
-                keys = pygame.key.get_pressed()
+                    keys = pygame.key.get_pressed()
 
-                # BACKSPACE
-                if keys[pygame.K_BACKSPACE] and self.solved == False:
-                    if self.selected != [-1,-1] and self.sudokufunctions.grid[self.selected[1]][self.selected[0]] != 0:
+                    # BACKSPACE
+                    if keys[pygame.K_BACKSPACE] and self.solved == False:
+                        if self.selected != [-1,-1] and self.sudokufunctions.grid[self.selected[1]][self.selected[0]] != 0:
 
-                        self.previousmoves.append([self.selected[1], self.selected[0], self.sudokufunctions.grid[self.selected[1]][self.selected[0]]])
-                        # add the removal to the previous moves
+                            self.previousmoves.append([self.selected[1], self.selected[0], self.sudokufunctions.grid[self.selected[1]][self.selected[0]]])
+                            # add the removal to the previous moves
 
-                        self.sudokufunctions.grid[self.selected[1]][self.selected[0]] = 0
-                        self.sudokufunctions.gridfixed[self.selected[1]][self.selected[0]] = 0
-                        # removes the value from the selected box
+                            self.sudokufunctions.grid[self.selected[1]][self.selected[0]] = 0
+                            self.sudokufunctions.gridfixed[self.selected[1]][self.selected[0]] = 0
+                            # removes the value from the selected box
 
-            self.drawgrid()
+
+                if not self.playing:
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+
+                        mousex, mousey = pygame.mouse.get_pos()
+
+                        if 200 < mousex < 300 and 425 < mousey < 475: # return box coords are (x = 200, y = 425, x length = 100, y height = 50)
+                            # clicking return box
+                            difficulty = Start_Menu.start_menu()
+                            sudoku.reset_grid(difficulty)     
+            
+
+            self.draw_grid()
 
             if not self.playing:
-                self.drawendscreen()
+                self.draw_endscreen()
+
+            
 
             pygame.display.update()
 
 
-    def drawgrid(self):
+    def draw_grid(self):
 
         # TITLE BOX
         pygame.draw.rect(win, self.black, (0, 10, 500, 45), 0)
@@ -227,49 +252,73 @@ class Sudoku():
         iconsSection = pygame.draw.rect(win, self.blue, (self.origin[0] + 250, 60, 200, 40), 0)
 
         # TIME TAKEN
-        currentTime = time.time() - self.startTime
+        if self.playing:
+            self.currentTime = time.time() - self.startTime
 
-        if currentTime > 60 * 60 * 24 and self.playing:
-            currentTime = datetime.timedelta(seconds=round(time.time() - self.startTime)).days
-            # if over a day, display the number of days only
-        
-            if currentTime > 1:
-                self.screentext = self.font.render(f"Time: {str(currentTime)} days", True, self.black)
+            if self.currentTime > 60 * 60 * 24 and self.playing:
+
+                self.currentTime = datetime.timedelta(seconds=round(self.currentTime)).days
+                # if over a day, display the number of days only
+                
+                if self.currentTime > 1:
+                    self.currentTime = f"Time: {str(self.currentTime)} days"
+                else:
+                    self.currentTime = f"Time: {str(self.currentTime)} day"
+
             else:
-                self.screentext = self.font.render(f"Time: {str(currentTime)} day", True, self.black)
+                self.currentTime = f"Time: {str(datetime.timedelta(seconds=round(time.time() - self.startTime)))}"
+                # display the time in hours:minutes:seconds format
 
-        else:
-            currentTime = datetime.timedelta(seconds=round(time.time() - self.startTime))
-            self.screentext = self.font.render(f"Time: {str(currentTime)}", True, self.black)
-            # display the time in hours:minutes:seconds format
-
-        screentext_rect = self.screentext.get_rect(center=(timeSection.center))        
-        win.blit(self.screentext, screentext_rect)
+        self.screentext = self.font.render(self.currentTime, True, self.black)
+        screentextrect = self.screentext.get_rect(center=(timeSection.center))        
+        win.blit(self.screentext, screentextrect)
 
         # GAME ICONS
         for i in range(len(self.icons)):
             win.blit(self.icons[i], (self.icons_X[i], 60))
 
 
-    def drawendscreen(self):
+    def draw_endscreen(self):
         # TITLE BOX
         endscreenborder = pygame.draw.rect(win, self.black, (100, 200, 300, 250), 0)
         endscreenbox = win.fill(self.blue, endscreenborder.inflate(-10, -10))
+        endboxcenter = (endscreenborder[0] + (endscreenborder[2] / 2), endscreenborder[1] + (endscreenborder[3] / 2))
+        
+        returnbox = pygame.draw.rect(win, self.white, (200, 425, 100, 50))
+        returnboxcenter = (returnbox[0] + (returnbox[2] / 2), returnbox[1] + (returnbox[3] / 2))
 
-    def resetgrid(self, difficulty):
+        completedmessage = self.boldfont.render("Well done!", True, self.white)
+        endscreentext = self.endfont.render("You finished the Sudoku in:", False, self.white)
+        timemessage = self.boldfont.render(f"{self.currentTime}", True, self.white)
+        returnmessage = self.endfont.render("Return", True, self.blue)
+
+        completedmessagerect = completedmessage.get_rect(center = (endboxcenter[0], endboxcenter[1] - 50))
+        endscreentextrect = endscreentext.get_rect(center = endboxcenter)
+        timemessagerect = timemessage.get_rect(center = (endboxcenter[0], endboxcenter[1] + 50))
+        returnmessagerect = returnmessage.get_rect(center = returnboxcenter)
+
+        win.blit(endscreentext, endscreentextrect)
+        win.blit(completedmessage, completedmessagerect)
+        win.blit(timemessage, timemessagerect)
+        win.blit(returnmessage, returnmessagerect)
+
+
+    def reset_grid(self, difficulty):
         # resets the grid to empty
         self.sudokufunctions = Sudoku_Functions.SudokuFunctions()
         self.sudokufunctions.difficulty = difficulty
         self.solved = False
-        self.sudokufunctions.Generate()
-        self.inputting()
-        #sudoku.inputting()
+        self.playing = True
+        self.incorrect = False
+        self.correct = False
+        self.previousmoves = []
+        self.sudokufunctions.generate_sudoku()
+        self.main_func()
 
 
 if __name__ == "__main__":
     # this is true when the program starts running
     sudoku = Sudoku()
-    sudoku.sudokufunctions = Sudoku_Functions.SudokuFunctions()
     difficulty = Start_Menu.start_menu()
-    sudoku.resetgrid(difficulty)
+    sudoku.reset_grid(difficulty)
     # keeps the menu running

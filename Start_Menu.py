@@ -44,7 +44,6 @@ def start_menu():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 pressing = True
                 x,y = event.pos
-                print("CLICK")
 
         for i in range(1, 4):
 
